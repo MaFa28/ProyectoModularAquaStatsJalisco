@@ -73,10 +73,14 @@ WSGI_APPLICATION = 'aquajalisco.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+DATABASES = { #Se agrega la base de datos de postgresql
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "aquastatsjalisco",
+        "USER": "postgres",
+        "PASSWORD": "123456789",
+        "HOST": "localhost",
+        "PORT": "5432",
     }
 }
 
