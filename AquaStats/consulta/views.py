@@ -4,6 +4,8 @@ from django.contrib.auth.models import User #metodo para registro de usuarios
 from django.contrib.auth import login, logout, authenticate #Metodos de autenticacion
 from django.db import IntegrityError #Errores en DB
 from django.http import HttpResponse # mensajes en pantalla
+from .formdom import RegistroDom, consumoagua #Traer mis formularios
+
 
 
 # Create your views here.
@@ -58,7 +60,25 @@ def inicio(request):#Vista inicio de sesion
     
 
 def domicilio(request):#Vista de registro de domicilio
-    return render(request, 'domicilio.html')   
+       if request.method == 'GET':#Si la peticion en GET regresa el formulario
+           return render(request,'domicilio.html',{
+               'form' : RegistroDom
+           })
+       else:
+           try:#logica para guardar los datos en la Base de Datos
+                Form = RegistroDom(request.POST)
+                nuevo_dom = Form.save(commit=False)
+                nuevo_dom.id_usuario = request.user
+                nuevo_dom.save()
+                return redirect('perfil')
+           except ValueError: #Muestra error en pantalla si no se completan los datos
+               return render(request,'domicilio.html',{
+                   'form' : RegistroDom,
+                   'error' : 'Ingresa datos validos'
+               })
+        
+           
+       
 
 def perfil(request):#Vista perfil
     return render(request,'perfil.html')
