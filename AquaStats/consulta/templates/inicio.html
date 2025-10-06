@@ -9,14 +9,14 @@
     </head>
     
     <body>
-            <nav class="navbar navbar-expand-lg bg-body-tertiary" data-bs-theme="dark" style="background-color: #e3f2fd;">
+            <nav class="navbar navbar-expand-lg navbar-ligth" style="background-color: #1095f4ff;" >
                 <div class="container-fluid">
                     <a class="navbar-brand" href="/">AquaStats</a>
                     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
                         <span class="navbar-toggler-icon"></span>
                     </button>
                     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-                        <div class="navbar-nav">
+                        <div class="navbar-nav ms-auto">
                             {% if user.is_authenticated %}<!--Condicional para mostrar si el usuario esta logeado-->
                                 <a class="nav-link" href="/salir">Salir</a>
                                 <a class="nav-link" href="#">Crear</a>
