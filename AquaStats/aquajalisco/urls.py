@@ -17,6 +17,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from consulta import views #importando las vistas
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -26,4 +28,4 @@ urlpatterns = [
     path('salir/',views.salir, name='salir'),#Url para cerrar sesion
     path('sesion/', views.inicio, name='insesion'),#Url para el inicio de sesion
     path('perfil/', views.perfil, name='perfil'),#Url para el perfil
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) #Se agrega para poder agregar las imagenes

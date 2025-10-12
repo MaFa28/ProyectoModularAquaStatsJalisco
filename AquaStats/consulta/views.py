@@ -5,13 +5,15 @@ from django.contrib.auth import login, logout, authenticate #Metodos de autentic
 from django.db import IntegrityError #Errores en DB
 from django.http import HttpResponse # mensajes en pantalla
 from .formdom import RegistroDom, consumoagua #Traer mis formularios
+from .models import Foto
 
 
 
 # Create your views here.
 
 def home(request):#Vista del Inicio
-    return render(request, 'inicio.html')
+    fotos = Foto.objects.filter(activo=True)#Pasar el carrusel a la vista
+    return render(request, 'inicio.html',{"fotos" : fotos})
 
 def sigup(request):#Vista del registro de usuarios
     
@@ -77,9 +79,6 @@ def domicilio(request):#Vista de registro de domicilio
                    'error' : 'Ingresa datos validos'
                })
         
-           
-       
-
 def perfil(request):#Vista perfil
     return render(request,'perfil.html')
             

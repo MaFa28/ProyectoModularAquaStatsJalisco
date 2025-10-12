@@ -176,3 +176,18 @@ class recomendaciones(models.Model): #Tabla recomendaciones
     
     def __str__(self):
         return self.texto + ' para ' + self.id_usuario.username #concatenar en el panel de admistrador
+
+
+class Foto(models.Model): #Modelo para las fotos 
+    titulo = models.CharField(max_length=100, blank=True, null=True)
+    imagen = models.ImageField(upload_to="carrusel/")
+    descripcion = models.TextField(blank=True, null=True)
+    orden = models.PositiveBigIntegerField(default=0, help_text="Orden del carrusel")
+    activo = models.BooleanField(default=True, help_text="Mostrar en carrusel")
+
+    class Meta:
+        ordering = ["orden"]   
+        verbose_name = "Foto de carrusel"
+        verbose_name_plural = "Fotos del carrusel" 
+    def __str__(self):
+        return self.titulo if self.titulo else f"Foto{self.id}"
