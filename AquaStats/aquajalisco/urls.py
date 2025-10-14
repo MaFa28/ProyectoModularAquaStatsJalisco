@@ -28,4 +28,5 @@ urlpatterns = [
     path('salir/',views.salir, name='salir'),#Url para cerrar sesion
     path('sesion/', views.inicio, name='insesion'),#Url para el inicio de sesion
     path('perfil/', views.perfil, name='perfil'),#Url para el perfil
+    path('crearReporte/',views.reporte, name='reporte'),#Url para los reportes
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) #Se agrega para poder agregar las imagenes

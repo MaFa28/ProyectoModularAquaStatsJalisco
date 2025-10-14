@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User#importando la tabla usuario para la relacion
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 # Create your models here.
 class domicilior(models.Model): #Tabla domicilio
@@ -155,18 +156,20 @@ class domicilior(models.Model): #Tabla domicilio
     
 
 class consumoagua(models.Model):#Tabla de consumos
-    REPORTE = {
-        "SEM" : "SEMANAL",
-        "MES" : "MENSUAL",
-    }
-    cantidad = models.BigIntegerField()
+    REPORTE = (
+        ("SEM", "SEMANAL"),
+        ("MES", "MENSUAL"),
+    )
+
+    #Datos a guardar en la base de datos
+    cantidad = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(90000)])
     tipo_reporte = models.CharField(max_length=50, choices=REPORTE)
     fecha = models.DateField()
     id_usuario = models.ForeignKey(User,on_delete=models.CASCADE)
     id_domicilio = models.ForeignKey(domicilior,on_delete=models.CASCADE)
     
     def __str__(self):
-        return self.cantidad + ' m3 ' + ' por ' + self.id_usuario.username #concatenar en el panel de admistrador
+        return  f"{self.cantidad} m3 por {self.id_usuario.username}"#concatenar en el panel de admistrador
     
 
 class recomendaciones(models.Model): #Tabla recomendaciones

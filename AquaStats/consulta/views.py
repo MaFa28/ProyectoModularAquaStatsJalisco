@@ -4,7 +4,7 @@ from django.contrib.auth.models import User #metodo para registro de usuarios
 from django.contrib.auth import login, logout, authenticate #Metodos de autenticacion
 from django.db import IntegrityError #Errores en DB
 from django.http import HttpResponse # mensajes en pantalla
-from .formdom import RegistroDom, consumoagua #Traer mis formularios
+from .formdom import RegistroDom, RegistroCosumo #Traer mis formularios
 from .models import Foto
 
 
@@ -69,18 +69,49 @@ def domicilio(request):#Vista de registro de domicilio
        else:
            try:#logica para guardar los datos en la Base de Datos
                 Form = RegistroDom(request.POST)
-                nuevo_dom = Form.save(commit=False)
-                nuevo_dom.id_usuario = request.user
-                nuevo_dom.save()
-                return redirect('perfil')
-           except ValueError: #Muestra error en pantalla si no se completan los datos
+                if Form.is_valid():
+                    nuevo_dom = Form.save(commit=False)
+                    nuevo_dom.id_usuario = request.user #Solicta el usuario a la base de datos
+                    nuevo_dom.save() #Guarda la informacion en la base datos
+                    return redirect('perfil')
+                else:
+                    return render(request,'domicilio.html',{
+                        'form' : RegistroDom,
+                        'error' : 'Ingresa datos validos'
+                    })
+           except Exception as e: #Muestra error en pantalla si no se completan los datos
                return render(request,'domicilio.html',{
                    'form' : RegistroDom,
-                   'error' : 'Ingresa datos validos'
+                   'error' : f'Ocurrio un error'
                })
         
 def perfil(request):#Vista perfil
     return render(request,'perfil.html')
             
+
+def reporte(request):#Vista para los  reportes
+    if request.method == 'GET': #Regresa la misma vista si se crea nuevo formulario
+        return render(request,'reporte.html',{
+            'form' : RegistroCosumo
+        })
+    else: 
+        try: #logica para guardar los datos de la  BdD
+            form = RegistroCosumo(request.POST)
+            if form.is_valid():#Validacion de datos
+                nuevo_rep = form.save(commit=False)
+                nuevo_rep.id_usuario = request.user #pide a la base datos el usuario
+                nuevo_rep.save() #guarda la informacion en la base de datos
+                return redirect('perfil') #redirecciona a la otra vista
+            else:
+                return render(request,'reporte.html',{ #si la condicional no se cumple se regresa el mismo formulario
+                    'form' : RegistroCosumo,
+                    'error' : 'Ingresa datos validos'
+                })
+        except Exception as e: #Manejo de errores
+            return render(request,'reporte.html',{
+                   'form' : RegistroCosumo,
+                   'error' : f'Ocurrio un error'
+               })
             
+    
     

@@ -19,7 +19,7 @@
                         <div class="navbar-nav ms-auto">
                             {% if user.is_authenticated %}<!--Condicional para mostrar si el usuario esta logeado-->
                                 <a class="nav-link" href="/salir">Salir</a>
-                                <a class="nav-link" href="#">Crear</a>
+                                <a class="nav-link" href="/crearReporte">Crear</a>
                                 <a class="nav-link" href="/perfil">Perfil</a>
                             {% else %}
                                 <a class="nav-link" href="/sesion">Iniciar Sesion</a>
@@ -38,9 +38,11 @@
                         <form method="POST" class="card card-body mt-5">
                             <h1 class="text-center">Registra tu domicilio</h1>
                             {% csrf_token %}
-                            {{ error }}
-                            <div class="mb-3">{{ form }}</div>
-                            <button class="btn btn-success">Enviar</button>
+                            <div class="mb-3">{{ form }}</div> <!--Input del formulario-->
+                                {% if error %} <!--Si se genera un error lo muestra en pantalla-->
+                                    <div class="alert alert-danger">{{ error }}</div>
+                                {% endif %}
+                            <button class="btn btn-success">Guardar</button>
                         </form>
                     </div>
                 </div>

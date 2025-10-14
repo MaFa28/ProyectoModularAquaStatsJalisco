@@ -1,7 +1,7 @@
 from django.forms import ModelForm #Para la creacion del formulario
 from .models import domicilior, consumoagua
 from django import forms
-from django.core.validators import MinValueValidator, MaxValueValidator
+
 #Aqui se crean todos los formularios
 class RegistroDom(ModelForm):#Modelo formulario registro domicilio
     class Meta:
@@ -15,13 +15,14 @@ class RegistroDom(ModelForm):#Modelo formulario registro domicilio
             'region' : forms.Select(attrs={'class':'form-select'})
         }
         
-class RegistroCosumo(ModelForm):#Modelo del formulario registro de consumo de agua
+class RegistroCosumo(forms.ModelForm):#Modelo del formulario registro de consumo de agua
     class Meta:
         model = consumoagua
-        fields = ['cantidad', 'tipo_reporte', 'fecha']
+        fields = ['cantidad', 'tipo_reporte', 'fecha', 'id_domicilio']
         widgets = {
             #Elemento para agregar estilos a los inputs
-            'cantidad' : forms.IntegerField(validators=[MinValueValidator(1),MaxValueValidator(90000)]),
+            'cantidad' : forms.NumberInput(attrs={'class': 'form-control', 'min': 1, 'max': 90000}),
             'tipo_reporte' : forms.Select(attrs={'class':'form-select'}),
-            'fecha' : forms.DateField()
+            'fecha' : forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'id_domicilio' : forms.Select(attrs={'class': 'form-select'})
         }
