@@ -19,7 +19,6 @@
                         <div class="navbar-nav ms-auto">
                             {% if user.is_authenticated %}<!--Condicional para mostrar si el usuario esta logeado-->
                                 <a class="nav-link" href="/salir">Salir</a>
-                                <a class="nav-link" href="/crearReporte">Crear Reporte</a>
                                 <a class="nav-link" href="/perfil">Perfil</a>
                             {% else %}
                                 <a class="nav-link" href="/sesion">Iniciar Sesion</a>
@@ -56,7 +55,10 @@
                             {% if error %} <!--Si se genera un error lo muestra en pantalla-->
                                 <div class="alert alert-danger">{{ error }}</div>
                             {% endif %}
-                            <button class="btn btn-success">Enviar</button><!--Boton para guardar la informacion-->
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-success">Enviar</button><!--Boton para guardar la informacion-->
+                                <a href="/perfil" class="btn btn-danger">Regresar</a>
+                            </div>
                         </form>
                     </div>
                 </div>

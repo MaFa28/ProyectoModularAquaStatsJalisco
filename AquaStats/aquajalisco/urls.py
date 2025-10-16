@@ -29,4 +29,6 @@ urlpatterns = [
     path('sesion/', views.inicio, name='insesion'),#Url para el inicio de sesion
     path('perfil/', views.perfil, name='perfil'),#Url para el perfil
     path('crearReporte/',views.reporte, name='reporte'),#Url para los reportes
+    path('perfil/exportar_excel/', views.exportar_excel, name='exportar_excel'),#URL para crear los archivos .xls
+    path('perfil/exportar_pdf/', views.exportar_pdf, name='exportar_pdf'),#URL para crear pdf
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) #Se agrega para poder agregar las imagenes

@@ -20,7 +20,6 @@
                         <div class="navbar-nav ms-auto">
                             {% if user.is_authenticated %}<!--Condicional para mostrar si el usuario esta logeado-->
                                 <a class="nav-link" href="/salir">Salir</a>
-                                <a class="nav-link" href="/crearReporte">Crear</a>
                                 <a class="nav-link" href="/perfil">Perfil</a>
                             {% else %}
                                 <a class="nav-link" href="/sesion">Iniciar Sesion</a>
@@ -35,10 +34,12 @@
             <main class="container">
                 <div class="row">
                     <div class="col-md-4 offset-md-4">
+                        {% if error %}
+                            <div class="alert alert-danger">{{ error }}</div> <!--Error en Pantalla-->
+                        {% endif %}
                         <!--formulario-->
                         <form method="POST" class="card card-body mt-5"><!--Envio de formulario-->
                             <h1 class="text-center">Inicio de Sesion</h1>
-                            {{error}}<!--Error en Pantalla-->
                             {% csrf_token %}<!--Token de autenticacion-->
                             <div class="mb-3"><!--Input de usuario-->
                                 <label for="username">Usuario:</label>
@@ -50,6 +51,9 @@
                             </div>
                             <button class="btn btn-success">Iniciar Sesion</button>
                         </form>
+                        <p class="text-center mt-3"><!--Envia a la vista registro-->
+                            ¿Aun no tienes una cuenta?<a href="/registro">Registrarse</a>
+                        </p>
                     </div>
                 </div>
             </main><!--Fin formulario-->
