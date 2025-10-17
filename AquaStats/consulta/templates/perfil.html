@@ -54,7 +54,7 @@
                 <div class="d-flex justify-content-end mb-3">
                     <a href="{% url 'exportar_excel' %}?tipo={{ tipo }}&fecha={{ fecha }}" class="btn btn-outline-success">Exportar Excel</a><!--Excel-->
                     <a href="{% url 'exportar_pdf' %}?tipo={{ tipo }}&fecha={{ fecha }}" class="btn btn-outline-danger">Exportar PDF</a><!--PDF-->
-                    <a href="/domicilio" class="btn btn-outline-info">Nuevo Domicilio</a>
+                    <a href="/domicilios" class="btn btn-outline-info">Domicilios</a>
                     <a href="/crearReporte" class="btn btn-outline-secondary">Nuevo Reporte</a>
                 </div>
 
@@ -80,8 +80,8 @@
                                     <td>{{ r.fecha|date:"d/m/Y" }}</td>
                                     <td>{{ r.id_domicilio.direccion }}</td>
                                     <td class="text-center"><!--Botenes para eliminar o editar los reportes-->
-                                        <a href="#" class="btn btn-sm btn-warning">Editar</a>
-                                        <a href="#" class="btn btn-sm btn-danger">Eliminar</a>
+                                        <a href="{% url 'editar_reporte' r.id %}" class="btn btn-sm btn-warning">Editar</a>
+                                        <a href="{% url 'eliminar_reporte' r.id %}" class="btn btn-sm btn-danger">Eliminar</a>
                                     </td>
                                 </tr>
                             {% endfor %}

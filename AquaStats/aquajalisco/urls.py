@@ -24,11 +24,16 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name='home'), #Url del home
     path('registro/', views.sigup, name='sigup'),#Url del registro de usuarios
-    path('domicilio/',views.domicilio, name='domicilio'),
+    path('domicilio/',views.domicilio, name='domicilio'),#Url de crear domicilio
+    path('domicilios/',views.ver_domicilios, name='ver_domicilios'),#URL de ver los domicilios registrados
+    path('domicilios/editar/<int:domicilio_id>', views.editar_domicilio, name="editar_domicilio"),#URL de editar los domicilios registrados
+    path('domicilios/eliminar/<int:domicilio_id>', views.eliminar_domicilio, name='eliminar_domicilio'),#URL de eliminar los domicilios registrados
     path('salir/',views.salir, name='salir'),#Url para cerrar sesion
     path('sesion/', views.inicio, name='insesion'),#Url para el inicio de sesion
     path('perfil/', views.perfil, name='perfil'),#Url para el perfil
     path('crearReporte/',views.reporte, name='reporte'),#Url para los reportes
+    path('perfil/editar/<int:id>/', views.editar_reporte, name='editar_reporte'),#URL editar reporte
+    path('perfil/eliminar/<int:id>', views.eliminar_reporte, name='eliminar_reporte'),#URL eliminar reporte
     path('perfil/exportar_excel/', views.exportar_excel, name='exportar_excel'),#URL para crear los archivos .xls
     path('perfil/exportar_pdf/', views.exportar_pdf, name='exportar_pdf'),#URL para crear pdf
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) #Se agrega para poder agregar las imagenes

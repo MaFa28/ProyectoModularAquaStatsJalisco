@@ -1,11 +1,12 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404#Obtiene los datos de la BDD si no existen arroja error
+from django.contrib import messages #Enviar mensajes temporales al usuario
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm #importar el form de django
 from django.contrib.auth.models import User #metodo para registro de usuarios
 from django.contrib.auth import login, logout, authenticate #Metodos de autenticacion
 from django.db import IntegrityError #Errores en DB
 from django.http import HttpResponse, FileResponse # mensajes en pantalla
 from .formdom import RegistroDom, RegistroCosumo #Traer mis formularios
-from .models import Foto, consumoagua #Traer mis modelos
+from .models import Foto, consumoagua, domicilior #Traer mis modelos
 from django.core.paginator import Paginator #Agregar paginacion en la tabla
 import openpyxl#Para trabajar con archivos de excel
 import io #Trabajar con los PDF
@@ -14,7 +15,7 @@ from reportlab.pdfgen import canvas#Crear PDF
 from reportlab.lib.pagesizes import letter#Crear PDF
 from reportlab.lib import colors#Crear PDF
 from reportlab.lib.units import inch#Crear PDF
-from django.utils import timezone
+from django.utils import timezone #manejo de fechas y horas
 
 
 
@@ -84,7 +85,7 @@ def domicilio(request):#Vista de registro de domicilio
                     nuevo_dom = Form.save(commit=False)
                     nuevo_dom.id_usuario = request.user #Solicta el usuario a la base de datos
                     nuevo_dom.save() #Guarda la informacion en la base datos
-                    return redirect('perfil')
+                    return redirect('ver_domicilios')
                 else:
                     return render(request,'domicilio.html',{
                         'form' : RegistroDom,
@@ -95,7 +96,39 @@ def domicilio(request):#Vista de registro de domicilio
                    'form' : RegistroDom,
                    'error' : f'Ocurrio un error'
                })
-        
+   
+
+def ver_domicilios(request):#Vista para ver los domicilios registrados
+    domicilios = domicilior.objects.filter(id_usuario=request.user) #Filtrado de domicilios del usuario logeado
+    return render(request, 'domicilios.html',{
+        'domicilios' : domicilios
+    })   
+
+def editar_domicilio(request, domicilio_id):
+    domicilio = get_object_or_404(domicilior, id=domicilio_id, id_usuario=request.user) #Metodo para evitar que otros usuarios modifiquen formularios que no sean suyos
+    
+    if request.method == 'POST':#Metodo POST
+        form = RegistroDom(request.POST, instance=domicilio)
+        if form.is_valid():#Revisa si la informacion es valida
+            form.save()#Guarda la informacion
+            return redirect('ver_domicilios')#redirecciona a la vista
+    else:#Si no se cumple la condicion regresa el form otra vez
+        form = RegistroDom(instance=domicilio)#Si no se cumple la condicion regresa el form otra vez
+    return render(request,'editardomi.html',{
+        'form' : form
+    })
+     
+def eliminar_domicilio(request, domicilio_id):
+    domicilio = get_object_or_404(domicilior, id=domicilio_id, id_usuario=request.user)#Si no se cumple la condicion regresa el form otra vez
+    
+    if request.method == 'POST':#Metodo POST
+        domicilio.delete()#Elimina el domicilio de la base de datos
+        return redirect('ver_domicilios')#Redirecciona a los domicilios
+    
+    return render(request, 'eliminardomi.html', { #Regresa el mismo formulario a pantalla
+        'domicilio': domicilio
+        })
+   
 def perfil(request):#Vista perfil
     
     #Filtros
@@ -122,7 +155,7 @@ def perfil(request):#Vista perfil
         'tipo' : tipo,
         'fecha' : fecha,
     })
-            
+     
 def reporte(request):#Vista para los  reportes
     if request.method == 'GET': #Regresa la misma vista si se crea nuevo formulario
         return render(request,'reporte.html',{
@@ -147,13 +180,41 @@ def reporte(request):#Vista para los  reportes
                    'error' : f'Ocurrio un error'
                })
             
+def editar_reporte(request, id):#Vista para editar los reportes
+    reporte = get_object_or_404(consumoagua, id=id, id_usuario=request.user)#Metodo para evitar que otros usuarios modifiquen formularios que no sean suyos
+    
+    
+    if request.method == 'POST':
+        form = RegistroCosumo(request.POST, instance=reporte)
+        if form.is_valid():#Valida si el formulario es valido
+            form.save()#Metodo que guarda la informacion 
+            messages.success(request, 'Reporte Actualizado')
+            return redirect('perfil')
+        else:
+            messages.error(request, 'Error al Actualizar')#Mensaje de error
+    else:
+        form = RegistroCosumo(instance=reporte)
+    return render(request,'editarrepo.html',{
+        'form' : form
+    })
+    
+def eliminar_reporte(request, id):#Vista para eliminar los reportes
+    reporte = get_object_or_404(consumoagua, id=id, id_usuario=request.user)#Metodo para evitar que otros usuarios eliminen formularios que no sean suyos
+    
+    if request.method == 'POST':
+            reporte.delete()#Metodo para eliminar el reporte
+            messages.success(request, 'Reporte eliminado')
+            return redirect('perfil')
+    return render(request, 'eliminarrepo.html',{
+        'reporte' : reporte
+    })
 
 def exportar_excel(request):#Vista para exportar archivos a EXCEl
     #Filtros
     tipo = request.GET.get('tipo')
     fecha = request.GET.get('fecha')
     
-    reportes = consumoagua.objects.filter(id_usuario=request.user)
+    reportes = consumoagua.objects.filter(id_usuario=request.user) #Obtiene los datos del usuario logeado
     if tipo:
         reportes = reportes.filter(tipo_reporte=tipo)
     if fecha:
@@ -186,14 +247,14 @@ def exportar_excel(request):#Vista para exportar archivos a EXCEl
     wb.save(response)
     return response
 
-
 def exportar_pdf(request):#Vista para generar PDF con estilos
     tipo = request.GET.get('tipo')
     fecha = request.GET.get('fecha')
     
-    reportes = consumoagua.objects.filter(id_usuario=request.user)
+    reportes = consumoagua.objects.filter(id_usuario=request.user)#Se obtienen solos los datos del usuario logeado
     
-    if tipo:
+    #Filtros
+    if tipo: 
         reportes = reportes.filter(tipo_reporte=tipo)
     if fecha:
         try:
