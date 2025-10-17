@@ -9,13 +9,17 @@ from .formdom import RegistroDom, RegistroCosumo #Traer mis formularios
 from .models import Foto, consumoagua, domicilior #Traer mis modelos
 from django.core.paginator import Paginator #Agregar paginacion en la tabla
 import openpyxl#Para trabajar con archivos de excel
-import io #Trabajar con los PDF
+import io  #Trabajar con los PDF
+from io import BytesIO
+import pandas as pd
 from datetime import datetime #para convertir la informacion para exportar
 from reportlab.pdfgen import canvas#Crear PDF
 from reportlab.lib.pagesizes import letter#Crear PDF
 from reportlab.lib import colors#Crear PDF
 from reportlab.lib.units import inch#Crear PDF
 from django.utils import timezone #manejo de fechas y horas
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle #Estilos en el PDF
+from reportlab.lib.styles import getSampleStyleSheet #Trabajo en PDF
 
 
 
@@ -27,30 +31,29 @@ def home(request):#Vista del Inicio
     return render(request, 'inicio.html',{"fotos" : fotos})
 
 def sigup(request):#Vista del registro de usuarios
-    
     if request.method == 'GET':#Enviando el formulario a pantalla
-        return render(request, 'registro.html', {
+        return render(request,'registro.html',{
             'form' : UserCreationForm
         })
     else:
-        form = UserCreationForm
-        if form.is_valid():#Verificacion de datos antes de guardar
-            try: #manejo de errores
+        if request.POST['password1'] == request.POST['password2']:#Verificacion de datos antes de guardar
+            try:#manejo de errores
                 #registro de usuario
-                user = form.save()#Guarda el usuario en la BDD
-                login(request, user)#crea el id de inicio de sesion
+                user = User.objects.create_user(username=request.POST['username'], password=request.POST['password1'])
+                user.save()#guardar el usuario en la BD
+                login(request,user)#crea el id de inicio de sesion
                 return redirect('domicilio')#envia a la vista domicilio
-            except IntegrityError: 
-                return render(request, 'registro.html',{ #error por si el usuario ya existe
+            except IntegrityError:
+                return render(request,'registro.html',{#error por si el usuario ya existe
                     'form' : UserCreationForm,
-                    "error" : 'Este usuario ya existe'
+                    "error" : 'Usuario ya existe'
                 })
-        else:
-            return render(request, 'registro.html', {
+        return render(request,'registro.html',{
             'form' : UserCreationForm,
-            "error" : 'Existen errores en el formulario'
+            "error" : 'Corrige los errores'
         })
-
+                
+    
 def salir(request):#Vista para cerrar sesion
     logout(request)
     return redirect('home')
@@ -265,46 +268,118 @@ def exportar_pdf(request):#Vista para generar PDF con estilos
         
     #Se crea buffer temporal
     buffer = io.BytesIO()
-    p = canvas.Canvas(buffer, pagesize=letter)
-    width, height = letter
-    
-    #Titulo
-    p.setFont("Helvetica-Bold", 16)
-    p.drawString(200, height - 50, "Reporte Consumo de Agua")
-    
-    #Encabezados, donde se añade colores, fecha y usuario que genero
-    p.setFillColor(colors.HexColor("#0077b6"))
-    p.rect(0, height - 80, width, 80, fill=True)
-    p.setFillColor(colors.white)
-    p.setFont("Helvetica-Bold", 20)
-    p.drawString(50, height - 50, "Reporte de Consumo de Agua")
-    p.setFont("Helvetica", 10)
-    p.drawString(50, height - 65, f"Usuario: {request.user.username}")
-    p.drawString(width - 180, height - 65, f"Generado: {timezone.now().strftime('%d/%m/%Y %H:%M')}")
-    
-    y = height - 120
-    p.setFont("Helvetica-Bold", 12)
-    p.setFillColor(colors.black)
-    p.drawString(50, y, "Cantidad (m³)")
-    p.drawString(150, y, "Tipo")
-    p.drawString(250, y, "Fecha")
-    p.drawString(350, y, "Domicilio")
-    
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=letter,
+        leftMargin=40, rightMargin=40, topMargin=60, bottomMargin=40  # 👈 márgenes
+    )
+
+    styles = getSampleStyleSheet()
+    elements = []
+
+    #Encabezado principal
+    titulo = Paragraph("<b>Reporte Público de Consumo de Agua</b>", styles["Title"])
+    fecha_gen = Paragraph(f"<b>Generado:</b> {timezone.now().strftime('%d/%m/%Y %H:%M')}", styles["Normal"])
+    elements.append(titulo)
+    elements.append(Spacer(1, 10))
+    elements.append(fecha_gen)
+    elements.append(Spacer(1, 20))
+
+    #Encabezados de tabla
+    data = [["Usuario", "Consumo (m3)", "Tipo de reporte", "Domicilio", "Fecha"]]
+
     #Filas
-    y -= 20
-    p.setFont("Helvetica", 10)
     for r in reportes:
-        if y < 80:  # Nueva página
-            p.showPage()
-            y = height - 80
-        p.drawString(50, y, str(r.cantidad))
-        p.drawString(150, y, r.get_tipo_reporte_display())
-        p.drawString(250, y, r.fecha.strftime("%d/%m/%Y"))
-        p.drawString(350, y, r.id_domicilio.direccion[:40])
-        y -= 20
-            
-    p.showPage()
-    p.save()#Guarda el PDF
+        data.append([
+            r.id_usuario.username,
+            str(r.cantidad),
+            r.get_tipo_reporte_display(),
+            r.id_domicilio.direccion,
+            r.fecha.strftime("%d/%m/%Y"),
+        ])
+
+    #Crear tabla con estilos y márgenes
+    table = Table(data, colWidths=[100, 80, 100, 120, 80])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#0077b6")),  #encabezado azul
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 10),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.whitesmoke),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),  #bordes de tabla
+        ('LEFTPADDING', (0, 0), (-1, -1), 6),          #margen interno
+        ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+        ('TOPPADDING', (0, 0), (-1, -1), 4),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+    ]))
+
+    elements.append(table)
+    doc.build(elements)
+
     buffer.seek(0)
     
     return FileResponse(buffer, as_attachment=True, filename="reportes_consumo.pdf")
+
+def reportes_publicos(request):#Vista para vizualizar todos los reportes de manera global
+    reportes = consumoagua.objects.select_related('id_usuario','id_domicilio')
+    
+    #Filtros
+    tipo_reporte = request.GET.get('tipo_reporte')
+    region = request.GET.get('region')
+    usuario = request.GET.get('usuario')
+    
+    if tipo_reporte:#Validaciones para los filtros
+        reportes = reportes.filter(tipo_reporte=tipo_reporte)
+    if region:
+        reportes = reportes.filter(id_domicilio__region=region)
+    if usuario: 
+        reportes= reportes.filter(id_usuario__username__icontains=usuario)
+        
+    #Metodo para exportar todo o la pagina actual
+    if 'exportar_excel' in request.GET or 'exportar_pdf' in request.GET:
+        exportar_todo = request.GET.get('exportar_todo', '0') == '1'
+
+    #Exportar solo la página actual
+    exportar_todo = request.GET.get('exportar_todo', False)
+    if not exportar_todo:
+        paginator = Paginator(reportes, 10)
+        page_number = request.GET.get('page')
+        reportes = paginator.get_page(page_number).object_list
+
+    data = [#Obtiene la informacion
+        {
+            'Usuario': r.id_usuario.username,
+            'Consumo (m3)': r.cantidad,
+            'Región': r.id_domicilio.region,
+            'Tipo de Reporte': r.get_tipo_reporte_display(),
+        }
+        for r in reportes
+    ]
+    
+    #Exportar con excel
+    if 'exportar_excel' in request.GET:
+        df = pd.DataFrame(data)
+        response = HttpResponse(
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        nombre = "reportes_todos.xlsx" if exportar_todo else "reportes_pagina.xlsx"
+        response['Content-Disposition'] = f'attachment; filename="{nombre}"'
+        df.to_excel(response, index=False)
+        return response
+    
+    
+    #Paginacion
+    paginator = Paginator(reportes, 10) 
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'reportes_publicos.html', {
+        'page_obj': page_obj,
+        'reportes': page_obj.object_list,
+    })
+    
+
+
+
+

@@ -152,7 +152,7 @@ class domicilior(models.Model): #Tabla domicilio
     id_usuario = models.ForeignKey(User, on_delete=models.CASCADE)
     
     def __str__(self):
-        return self.direccion + ' por ' + self.id_usuario.username #concatenar en el panel de administrador
+        return self.direccion#concatenar en el panel de administrador
     
 
 class consumoagua(models.Model):#Tabla de consumos

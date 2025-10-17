@@ -36,4 +36,5 @@ urlpatterns = [
     path('perfil/eliminar/<int:id>', views.eliminar_reporte, name='eliminar_reporte'),#URL eliminar reporte
     path('perfil/exportar_excel/', views.exportar_excel, name='exportar_excel'),#URL para crear los archivos .xls
     path('perfil/exportar_pdf/', views.exportar_pdf, name='exportar_pdf'),#URL para crear pdf
+    path('reportes_todos/', views.reportes_publicos, name='reportes_todos'),#URL para ver todo los reportes
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) #Se agrega para poder agregar las imagenes

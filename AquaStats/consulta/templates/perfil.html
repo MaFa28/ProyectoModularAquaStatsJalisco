@@ -45,17 +45,19 @@
                         <label for="fecha" class="form-label">Fecha</label>
                         <input type="date" name="fecha" id="fecha" class="form-control" value="{{ fecha }}">
                     </div>
-                    <div class="col-md-4 d-flex align-items-end"><!--Boton para el filtro-->
-                        <button type="submit" class="btn btn-success w-100">Filtrar</button>
+                    <div class="col-md-3"><!--Boton para el filtro y limpiar los filtros-->
+                        <button type="submit" class="btn btn-success w-100 mb-1">Filtrar</button>
+                        <a href="/perfil" class="btn btn-secondary w-100">Limpiar</a>
                     </div>
                 </form>
 
                 <!--Elementos de descarga-->
-                <div class="d-flex justify-content-end mb-3">
+                <div class="mb-3 d-flex gap-2">
                     <a href="{% url 'exportar_excel' %}?tipo={{ tipo }}&fecha={{ fecha }}" class="btn btn-outline-success">Exportar Excel</a><!--Excel-->
                     <a href="{% url 'exportar_pdf' %}?tipo={{ tipo }}&fecha={{ fecha }}" class="btn btn-outline-danger">Exportar PDF</a><!--PDF-->
                     <a href="/domicilios" class="btn btn-outline-info">Domicilios</a>
                     <a href="/crearReporte" class="btn btn-outline-secondary">Nuevo Reporte</a>
+                    <a href="/reportes_todos" class="btn btn-outline-warning">Ver todos los reportes</a>
                 </div>
 
                 <!--Tabla de datos-->

@@ -1,0 +1,152 @@
+<!DOCTYPE html> <!--Plantilla para todas las paginas-->
+<html lang="es">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>AquaStatsJalisco</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    </head>
+    
+    <body>
+            <nav class="navbar navbar-expand-lg navbar-ligth" style="background-color: #1095f4ff;">
+                <div class="container-fluid">
+                    <a class="navbar-brand" href="/">AquaStats</a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+                        <div class="navbar-nav ms-auto">
+                            {% if user.is_authenticated %}<!--Condicional para mostrar si el usuario esta logeado-->
+                                <a class="nav-link" href="/salir">Salir</a>
+                            {% else %}
+                                <a class="nav-link" href="/sesion">Iniciar Sesion</a>
+                                <a class="nav-link" href="/registro">Registro</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </nav> <!--Barra de navegacion-->
+           
+            <div class="container mt-4"><!--Contiene todos los metodos necesarios de la tabla-->
+                <h2 class="mb-3">Reportes de todos los usuarios</h2>
+
+                <!--Filtros-->
+                <form method="GET" class="row mb-4 g-2 align-items-end"><!--Contiene los filtros-->
+                    <div class="col-md-3">
+                        <label class="form-label">Tipo de reporte</label><!--Filtra los reportes por tipo-->
+                        <select name="tipo_reporte" class="form-select">
+                            <option value="">Todos</option>
+                            <option value="SEM" {% if request.GET.tipo_reporte == 'SEM' %}selected{% endif %}>Semanal</option>
+                            <option value="MES" {% if request.GET.tipo_reporte == 'MES' %}selected{% endif %}>Mensual</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Región</label><!--Filtra la informacion por su region-->
+                        <select name="region" class="form-select">
+                            <option value="">Todas</option>
+                            <option value="RN" {% if request.GET.region == 'RN' %}selected{% endif %}>Norte</option>
+                            <option value="RAN" {% if request.GET.region == 'RAN' %}selected{% endif %}>Altos Norte</option>
+                            <option value="RAS" {% if request.GET.region == 'RAS' %}selected{% endif %}>Altos Sur</option>
+                            <option value="RC" {% if request.GET.region == 'RCC' %}selected{% endif %}>Cienega</option>
+                            <option value="RSE" {% if request.GET.region == 'RV' %}selected{% endif %}>Sureste</option>
+                            <option value="RS" {% if request.GET.region == 'RV' %}selected{% endif %}>Sur</option>
+                            <option value="RSA" {% if request.GET.region == 'RV' %}selected{% endif %}>Sierra de Amula</option>
+                            <option value="RCS" {% if request.GET.region == 'RV' %}selected{% endif %}>Costa Sur</option>
+                            <option value="RCN" {% if request.GET.region == 'RV' %}selected{% endif %}>Costa Norte</option>
+                            <option value="RSO" {% if request.GET.region == 'RV' %}selected{% endif %}>Sierra Occidental</option>
+                            <option value="RV" {% if request.GET.region == 'RV' %}selected{% endif %}>Valles</option>
+                            <option value="RCC" {% if request.GET.region == 'RV' %}selected{% endif %}>Centro</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Usuario</label><!--Filtra la informacion por usuarios-->
+                        <input type="text" name="usuario" class="form-control" value="{{ request.GET.usuario }}" placeholder="Buscar usuario...">
+                    </div>
+
+                    <div class="col-md-3"><!--Aplica los filtros y los limpia-->
+                        <button class="btn btn-primary w-100 mb-1">Filtrar</button>
+                        <a href="{% url 'reportes_todos' %}" class="btn btn-secondary w-100">Limpiar</a>
+                    </div>
+                </form>
+
+                <!--Botones para exportar-->
+                <div class="mb-3 d-flex gap-2">
+                    <!-- Exportarsolo una pagina  -->
+                    <a href="?exportar_excel=1&exportar_todo=0{% if request.GET.tipo_reporte %}&tipo_reporte={{ request.GET.tipo_reporte }}{% endif %}{% if request.GET.region %}&region={{ request.GET.region }}{% endif %}{% if request.GET.usuario %}&usuario={{ request.GET.usuario }}{% endif %}{% if request.GET.page %}&page={{ request.GET.page }}{% endif %}" class="btn btn-success">
+                        Exportar esta página (Excel)
+                    </a><!--Exponer a excel-->
+
+                    <!-- Exportar todo -->
+                    <a href="?exportar_excel=1&exportar_todo=1{% if request.GET.tipo_reporte %}&tipo_reporte={{ request.GET.tipo_reporte }}{% endif %}{% if request.GET.region %}&region={{ request.GET.region }}{% endif %}{% if request.GET.usuario %}&usuario={{ request.GET.usuario }}{% endif %}" class="btn btn-outline-success">
+                        Exportar todo (Excel)
+                    </a>
+                    
+                    <a href="/perfil" class="btn btn-outline-warning">Regresar</a><!--Boton que regresa a la pagina de reportes-->
+                </div>
+
+
+                <!--Tabla-->
+                <table class="table table-bordered table-striped text-center">
+                    <thead class="table-dark"><!--Columnas-->
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Consumo (m3)</th>
+                            <th>Región</th>
+                            <th>Tipo de Reporte</th>
+                        </tr>
+                    </thead>
+                    <tbody><!--Filas-->
+                        {% for r in reportes %}
+                            <tr>
+                                <td>{{ r.id_usuario.username }}</td>
+                                <td>{{ r.cantidad }}</td>
+                                <td>{{ r.id_domicilio.region }}</td>
+                                <td>{{ r.get_tipo_reporte_display }}</td>
+                            </tr>
+                        {% empty %}<!--Si no se han creado reportes-->
+                            <tr>
+                                <td colspan="4" class="text-center">No se encontraron reportes</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <!--Paginacion-->
+                <nav aria-label="Page navigation"><!--Se agregan diferentes validaciones para evitar que los filtros se eliminen-->
+                    <ul class="pagination justify-content-center"><!--Ademas de poder ver paginas de reportes sin cambiar nada-->
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1{% if request.GET.tipo_reporte %}&tipo_reporte={{ request.GET.tipo_reporte }}{% endif %}{% if request.GET.region %}&region={{ request.GET.region }}{% endif %}{% if request.GET.usuario %}&usuario={{ request.GET.usuario }}{% endif %}">⏮️ Primero</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.tipo_reporte %}&tipo_reporte={{ request.GET.tipo_reporte }}{% endif %}{% if request.GET.region %}&region={{ request.GET.region }}{% endif %}{% if request.GET.usuario %}&usuario={{ request.GET.usuario }}{% endif %}">◀️ Anterior</a>
+                            </li>
+                        {% endif %}
+
+                        <li class="page-item disabled">
+                            <span class="page-link">
+                                Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                            </span>
+                        </li>
+
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.tipo_reporte %}&tipo_reporte={{ request.GET.tipo_reporte }}{% endif %}{% if request.GET.region %}&region={{ request.GET.region }}{% endif %}{% if request.GET.usuario %}&usuario={{ request.GET.usuario }}{% endif %}">Siguiente ▶️</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.tipo_reporte %}&tipo_reporte={{ request.GET.tipo_reporte }}{% endif %}{% if request.GET.region %}&region={{ request.GET.region }}{% endif %}{% if request.GET.usuario %}&usuario={{ request.GET.usuario }}{% endif %}">Último ⏭️</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+
+            </div>
+
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+        
+    </body>
+</html>
