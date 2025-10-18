@@ -38,4 +38,5 @@ urlpatterns = [
     path('perfil/exportar_pdf/', views.exportar_pdf, name='exportar_pdf'),#URL para crear pdf
     path('reportes_todos/', views.reportes_publicos, name='reportes_todos'),#URL para ver todo los reportes
     path('analisis/', views.analisis_usuario, name='analisis_usuario'),#URL para ver un analisis por usuario
+    path('dashboard/',views.dashboard_global, name='dashboard_global'),#URL para ver el analis de todos los usuarios
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) #Se agrega para poder agregar las imagenes

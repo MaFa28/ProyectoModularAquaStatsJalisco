@@ -162,7 +162,7 @@ class consumoagua(models.Model):#Tabla de consumos
     )
 
     #Datos a guardar en la base de datos
-    cantidad = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(90000)])
+    cantidad = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(99999999)])
     tipo_reporte = models.CharField(max_length=50, choices=REPORTE)
     fecha = models.DateField()
     id_usuario = models.ForeignKey(User,on_delete=models.CASCADE)

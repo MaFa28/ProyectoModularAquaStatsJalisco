@@ -14,6 +14,8 @@ import io  #Trabajar con los PDF
 from io import BytesIO
 import pandas as pd #Manejo de datos
 import numpy as np#Manejo de datos y los muestra en graficas
+import json #Utilizar instrucciones Javascript
+import plotly.express as px #Manejo de datos y muestra datos en dashboard
 from datetime import datetime #para convertir la informacion para exportar
 from reportlab.pdfgen import canvas#Crear PDF
 from reportlab.lib.pagesizes import letter#Crear PDF
@@ -446,6 +448,62 @@ def analisis_usuario(request):#Vista para ver un remusen del consumo, en forma d
     return render(request, 'analisis_usuario.html', contexto)
     
         
-
+def dashboard_global(request):#Vista para ver datos de manera global de todos los usuarios
+    #Filtros
+    tipo = request.GET.get('tipo')
+    region = request.GET.get('region')
+    usuario = request.GET.get('usuario')
+    
+    reportes = consumoagua.objects.select_related('id_domicilio','id_usuario')
+    
+    if tipo:
+        reportes = reportes.filter(tipo_reporte=tipo)
+    if region:
+        reportes = reportes.filter(id_domicilio__region=region)
+    if usuario:
+        reportes = reportes.filter(id_usuario_username=usuario)
+    #Covierte los datos en dataframe 
+    df = pd.DataFrame(list(reportes.values(
+        'fecha',
+        'cantidad',
+        'tipo_reporte',
+        'id_usuario__username',
+        'id_domicilio__region'
+    )))
+    
+    #Renombra las columnas
+    df.rename(columns={
+    'id_usuario__username': 'Usuario',
+    'id_domicilio__region': 'Region',
+    'tipo_reporte': 'Tipo de Reporte',
+    'cantidad': 'Cantidad',
+    'fecha': 'Fecha'
+    }, inplace=True)
+    
+    if df.empty: #revisa que exista informacion
+        return render(request,'dashboard.html',{
+            'empty' : True
+        })
+    
+    #Preparar los datos para convertilos en graficas
+    df['Fecha'] = pd.to_datetime(df['Fecha'])
+    df['mes'] = df['Fecha'].dt.to_period('M').astype(str)
+    
+    #Generar graficas
+    graf1 = px.line(df, x='Fecha', y='Cantidad', color='Usuario',title='Tendecia de Consumo por Usuario')
+    graf2 = px.bar(df.groupby(['Usuario','Tipo de Reporte'])
+                   ['Cantidad'].mean().reset_index(),x='Usuario', y='Cantidad',
+                   color='Tipo de Reporte',title='Promedio por usuario y Tipo de reporrte')
+    graf3 = px.pie(df, names='Region', title='Distribucion por region')
+    graf4 = px.box(df, x='Usuario', y='Cantidad', title='Distribucion de consumo por usuario')
+    #Regresa a la vista las graficas generadas
+    context = {#
+        'graf1' : graf1.to_json(),
+        'graf2' : graf2.to_json(),
+        'graf3' : graf3.to_json(),
+        'graf4' : graf4.to_json(),
+    }
+    
+    return render(request,'dashboard.html', context)
 
 

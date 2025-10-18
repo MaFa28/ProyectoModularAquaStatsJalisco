@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html> <!--Plantilla para todas las paginas-->
 <html lang="es">
     <head>
@@ -28,41 +29,64 @@
                     </div>
                 </div>
             </nav> <!--Barra de navegacion-->
-            <!--Inicio del formulario-->
-            <main class="container">
-                <div class="row">
-                    <div class="col-md-4 offset-md-4">
-                        <!--formulario-->
-                        <form method="POST" class="card card-body mt-5">
-                            <h1 class="text-center">Reporte Consumo de Agua</h1>
-                            {% csrf_token %}
-                            <div class="mb-3"><!--Input de la cantidad-->
-                                {{ form.cantidad.label_tag }}
-                                {{ form.cantidad }}
+
+            <div class= "container mt-4"><!--Contiene el formulario-->
+                <div class="d-flex justify-content-center align-items-start flex-wrap">
+                    <!--Inicio del formulario-->
+                            <div class="card p-4 shadow-sm" style="max-width: 400px; flex: 1;">
+                                <!--formulario-->
+                                <form method="POST" class="card card-body mt-5">
+                                    <h1 class="text-center">Reporte Consumo de Agua</h1>
+                                    {% csrf_token %}
+                                    <div class="mb-3"><!--Input de la cantidad-->
+                                        {{ form.cantidad.label_tag }}
+                                        {{ form.cantidad }}
+                                    </div>
+                                    <div class="mb-3"><!--Input del tipo de reporte-->
+                                        {{ form.tipo_reporte.label_tag }}
+                                        {{ form.tipo_reporte }}
+                                    </div>
+                                    <div class="mb-3"> <!--Input de la fecha-->
+                                        {{ form.fecha.label_tag }}
+                                        {{ form.fecha }}
+                                    </div>
+                                    <div class="mb-3"> <!--Input del domicilio-->
+                                        {{ form.id_domicilio.label_tag }}
+                                        {{ form.id_domicilio }}
+                                    </div>
+                                    {% if error %} <!--Si se genera un error lo muestra en pantalla-->
+                                        <div class="alert alert-danger">{{ error }}</div>
+                                    {% endif %}
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-success">Enviar</button><!--Boton para guardar la informacion-->
+                                        <a href="/perfil" class="btn btn-danger">Regresar</a>
+                                    </div>
+                                </form>
                             </div>
-                            <div class="mb-3"><!--Input del tipo de reporte-->
-                                {{ form.tipo_reporte.label_tag }}
-                                {{ form.tipo_reporte }}
-                            </div>
-                            <div class="mb-3"> <!--Input de la fecha-->
-                                {{ form.fecha.label_tag }}
-                                {{ form.fecha }}
-                            </div>
-                            <div class="mb-3"> <!--Input del domicilio-->
-                                {{ form.id_domicilio.label_tag }}
-                                {{ form.id_domicilio }}
-                            </div>
-                            {% if error %} <!--Si se genera un error lo muestra en pantalla-->
-                                <div class="alert alert-danger">{{ error }}</div>
-                            {% endif %}
-                            <div class="d-grid gap-2">
-                                <button class="btn btn-success">Enviar</button><!--Boton para guardar la informacion-->
-                                <a href="/perfil" class="btn btn-danger">Regresar</a>
-                            </div>
-                        </form>
+                    <!--Fin formulario-->
+                    
+                    <!--Imagen y instrucciones-->
+                    <div class="card shadow-sm ms-4 mt-3 mt-md-0 p-3" style="flex: 0 0 300px; text-align: center;">
+                            <img src="{% static 'img/medidor.png' %}" alt="Medidor de Agua" style="width: 100%; max-width: 250px; border-radius: 10px;">
+                            <ul class="list-unstyled text-start mt-3" style="font-size: 15px; color: #333;">
+                                <li>¿Como hacer la medicion?</li>
+                                <li>●Primera identifica tu medidor.</li>
+                                <li>●En tu medidor encontraras numeros negros o rojos estos indican metros cubicos o miles de litros.</li>
+                                <li>●En el observaras algo asi: "000123" entonces deberas capturarlo asi: "123000", ya que estos se estan midiendo en metros cubicos.</li>
+                                <li>●Si es un reporte "Semanal" </li>
+                                <li>●Este lo debes hacer cada inicio de semana, el medidor no se reinicia asi que si debes restar la cantidad del reporte anterior.</li>
+                                <li>●Ejemplo: "Semana anterior. -- 001125" "Semana actual -- 001160" entonces tu consumo sera "001135"</li>
+                                <li>●Si es un reporte "Mensual"</li>
+                                <li>●Este lo debes hacer cada primero de mes, el medidor no se reinicia asi que si debes restar la cantidad del reporte anterior.</li>
+                                <li>●Ejemplo: "Mes anterior. -- 001000" "Mes actual -- 001100" entonces tu consumo sera "110000"</li>
+                            </ul>
                     </div>
+
                 </div>
-            </main><!--Fin formulario-->
+            </div>
+
+
+
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
         
     </body>
