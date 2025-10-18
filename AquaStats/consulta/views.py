@@ -3,6 +3,7 @@ from django.contrib import messages #Enviar mensajes temporales al usuario
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm #importar el form de django
 from django.contrib.auth.models import User #metodo para registro de usuarios
 from django.contrib.auth import login, logout, authenticate #Metodos de autenticacion
+from django.contrib.auth.decorators import login_required#Proteger las rutas
 from django.db import IntegrityError #Errores en DB
 from django.http import HttpResponse, FileResponse # mensajes en pantalla
 from .formdom import RegistroDom, RegistroCosumo #Traer mis formularios
@@ -11,7 +12,8 @@ from django.core.paginator import Paginator #Agregar paginacion en la tabla
 import openpyxl#Para trabajar con archivos de excel
 import io  #Trabajar con los PDF
 from io import BytesIO
-import pandas as pd
+import pandas as pd #Manejo de datos
+import numpy as np#Manejo de datos y los muestra en graficas
 from datetime import datetime #para convertir la informacion para exportar
 from reportlab.pdfgen import canvas#Crear PDF
 from reportlab.lib.pagesizes import letter#Crear PDF
@@ -379,7 +381,71 @@ def reportes_publicos(request):#Vista para vizualizar todos los reportes de mane
         'reportes': page_obj.object_list,
     })
     
+def analisis_usuario(request):#Vista para ver un remusen del consumo, en forma de tabla y grafica, ademas muestra anomalias
+    reportes = consumoagua.objects.filter(id_usuario=request.user).select_related('id_domicilio')#Obtiene solo los reportes de el usuario logeado
 
+    if not reportes.exists():#Verifica que existan reportes
+        return render(request, 'analisis_usuario.html', {'mensaje': 'No hay registros de consumo disponibles.'})
+    #Covertir los datos a un dataframe
+    data = []
+    for r in reportes:
+        data.append({
+            'fecha': r.fecha or timezone.now().date(),
+            'cantidad': float(r.cantidad or 0),
+            'region': getattr(r.id_domicilio, 'region', '—'),
+            'domicilio': getattr(r.id_domicilio, 'direccion', '—'),
+        })
+    #Formatp para las fechas
+    df = pd.DataFrame(data)
+    df['fecha'] = pd.to_datetime(df['fecha'])
+    df['mes'] = df['fecha'].dt.to_period('M')
+    #Calculo de metricas
+    promedio = df['cantidad'].mean()
+    desviacion = df['cantidad'].std()
+    maximo = df['cantidad'].max()
+    minimo = df['cantidad'].min()
+
+
+    # Detectar consumos anormales
+    df['anormal'] = np.where(
+        (df['cantidad'] > promedio + 2*desviacion) | (df['cantidad'] < promedio - 2*desviacion),
+        True, False
+    )
+
+    #Agrupar por mes
+    tendencia = df.groupby('mes')['cantidad'].mean().reset_index()
+
+    #Generar alertas
+    alertas = []
+    if len(tendencia) > 1:
+        tendencia = tendencia.sort_values(by='mes')
+        for i in range(1, len(tendencia)):
+            mes_actual = tendencia.iloc[i]
+            mes_anterior = tendencia.iloc[i - 1]
+            if mes_anterior['cantidad'] != 0:
+                cambio = ((mes_actual['cantidad'] - mes_anterior['cantidad']) / mes_anterior['cantidad']) * 100
+                if cambio > 30:
+                    alertas.append({'tipo': 'aumento', 'mensaje': f" Tu consumo aumentó un {cambio:.1f}% en {mes_actual['mes']} respecto al mes anterior."})
+                elif cambio < -30:
+                    alertas.append({'tipo': 'disminucion', 'mensaje': f" Tu consumo disminuyó un {abs(cambio):.1f}% en {mes_actual['mes']} respecto al mes anterior."})
+
+    #Una vez obtenida la informacion esta se agrupa y se envia a la vista
+    contexto = {
+            'promedio': round(promedio, 2),
+            'desviacion': round(desviacion, 2),
+            'maximo': maximo,
+            'minimo': minimo,
+            'anormales': df[df['anormal'] == True].to_dict(orient='records'),
+            'tendencia': tendencia.to_dict(orient='records'),
+            'alertas': alertas,
+            'total_registros': len(df),
+            'fecha_actual': timezone.now(),
+        }
+
+    
+    return render(request, 'analisis_usuario.html', contexto)
+    
+        
 
 
 
