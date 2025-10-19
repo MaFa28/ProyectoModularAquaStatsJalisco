@@ -39,4 +39,7 @@ urlpatterns = [
     path('reportes_todos/', views.reportes_publicos, name='reportes_todos'),#URL para ver todo los reportes
     path('analisis/', views.analisis_usuario, name='analisis_usuario'),#URL para ver un analisis por usuario
     path('dashboard/',views.dashboard_global, name='dashboard_global'),#URL para ver el analis de todos los usuarios
+    path('regresion/', views.regresion_lineal, name='regresion'),#URL para aplicar el algoritmo de regresion por usuario
+    path('regresion_global/', views.regresion_global, name='regresion_global'),#URL para aplicar el algoritmo de regresion de manera global
+    path('historial_metricas/',views.historial_metricas, name='historial_metricas'),#URL para ver las metricas del modelo
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) #Se agrega para poder agregar las imagenes

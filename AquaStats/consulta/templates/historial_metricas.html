@@ -1,0 +1,68 @@
+<!DOCTYPE html> <!--Plantilla para todas las paginas-->
+<html lang="es">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>AquaStatsJalisco</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    </head>
+    
+    <body>
+            <nav class="navbar navbar-expand-lg navbar-ligth" style="background-color: #1095f4ff;">
+                <div class="container-fluid">
+                    <a class="navbar-brand" href="/">AquaStats</a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+                        <div class="navbar-nav ms-auto">
+                            {% if user.is_authenticated %}<!--Condicional para mostrar si el usuario esta logeado-->
+                                <a class="nav-link" href="/salir">Salir</a>
+                            {% else %}
+                                <a class="nav-link" href="/sesion">Iniciar Sesion</a>
+                                <a class="nav-link" href="/registro">Registro</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </nav> <!--Barra de navegacion-->
+            
+            <div class="container mt-4"><!--Todos los elementos de la tabla-->
+                <h3 class="text-center mb-3">Historial de Entrenamientos</h3>
+                <table class="table table-striped table-bordered"><!--Tabla que enlista todas las metricas realizadas-->
+                    <thead class="table-dark"><!--Columnas de la tabla-->
+                        <tr>
+                            <th>Fecha</th>
+                            <th>R²</th>
+                            <th>MSE</th>
+                            <th>β₀</th>
+                            <th>β₁</th>
+                            <th>Predicción</th>
+                        </tr>
+                    </thead>
+                    <tbody><!--Filas de la tabla-->
+                        {% for m in metricas %}
+                        <tr>
+                            <td>{{ m.fecha_entrenamiento|date:"d/m/Y H:i" }}</td>
+                            <td>{{ m.r2 }}</td>
+                            <td>{{ m.mse }}</td>
+                            <td>{{ m.b0 }}</td>
+                            <td>{{ m.b1 }}</td>
+                            <td>{{ m.prediccion }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="6" class="text-center">No hay registros aún.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="text-center"><!--Boton de regreso-->
+                    <a href="/dashboard" class="btn btn-danger">Regresar</a>
+                </div>
+            </div>
+
+                    
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+        
+    </body>
+</html>

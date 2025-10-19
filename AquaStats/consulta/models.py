@@ -180,6 +180,19 @@ class recomendaciones(models.Model): #Tabla recomendaciones
     def __str__(self):
         return self.texto + ' para ' + self.id_usuario.username #concatenar en el panel de admistrador
 
+class RegresionMetricas(models.Model):#Tabla para guardar los datos del algorimto de regresion
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    fecha_entrenamiento = models.DateTimeField(auto_now_add=True)
+    r2 = models.FloatField()
+    mse = models.FloatField()
+    b0 = models.FloatField()
+    b1 = models.FloatField()
+    prediccion = models.FloatField()
+
+    def __str__(self):
+        user_display = self.usuario.username if self.usuario else "Global"
+        return f"Métricas {user_display} - {self.fecha_entrenamiento.strftime('%d/%m/%Y %H:%M')}"
+
 
 class Foto(models.Model): #Modelo para las fotos 
     titulo = models.CharField(max_length=100, blank=True, null=True)

@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required#Proteger las rutas
 from django.db import IntegrityError #Errores en DB
 from django.http import HttpResponse, FileResponse # mensajes en pantalla
 from .formdom import RegistroDom, RegistroCosumo #Traer mis formularios
-from .models import Foto, consumoagua, domicilior #Traer mis modelos
+from .models import Foto, consumoagua, domicilior, RegresionMetricas #Traer mis modelos
 from django.core.paginator import Paginator #Agregar paginacion en la tabla
 import openpyxl#Para trabajar con archivos de excel
 import io  #Trabajar con los PDF
@@ -16,6 +16,7 @@ import pandas as pd #Manejo de datos
 import numpy as np#Manejo de datos y los muestra en graficas
 import json #Utilizar instrucciones Javascript
 import plotly.express as px #Manejo de datos y muestra datos en dashboard
+import plotly.io as pio
 from datetime import datetime #para convertir la informacion para exportar
 from reportlab.pdfgen import canvas#Crear PDF
 from reportlab.lib.pagesizes import letter#Crear PDF
@@ -24,6 +25,8 @@ from reportlab.lib.units import inch#Crear PDF
 from django.utils import timezone #manejo de fechas y horas
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle #Estilos en el PDF
 from reportlab.lib.styles import getSampleStyleSheet #Trabajo en PDF
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, r2_score
 
 
 
@@ -446,23 +449,24 @@ def analisis_usuario(request):#Vista para ver un remusen del consumo, en forma d
 
     
     return render(request, 'analisis_usuario.html', contexto)
-    
-        
+           
 def dashboard_global(request):#Vista para ver datos de manera global de todos los usuarios
-    #Filtros
+
+    # --- Filtros ---
     tipo = request.GET.get('tipo')
     region = request.GET.get('region')
     usuario = request.GET.get('usuario')
-    
-    reportes = consumoagua.objects.select_related('id_domicilio','id_usuario')
-    
+
+    reportes = consumoagua.objects.select_related('id_domicilio', 'id_usuario')
+
     if tipo:
         reportes = reportes.filter(tipo_reporte=tipo)
     if region:
         reportes = reportes.filter(id_domicilio__region=region)
     if usuario:
-        reportes = reportes.filter(id_usuario_username=usuario)
-    #Covierte los datos en dataframe 
+        reportes = reportes.filter(id_usuario__username=usuario)
+
+    # --- Convertir a DataFrame ---
     df = pd.DataFrame(list(reportes.values(
         'fecha',
         'cantidad',
@@ -470,40 +474,237 @@ def dashboard_global(request):#Vista para ver datos de manera global de todos lo
         'id_usuario__username',
         'id_domicilio__region'
     )))
-    
-    #Renombra las columnas
+
+    # --- Renombrar columnas ---
     df.rename(columns={
-    'id_usuario__username': 'Usuario',
-    'id_domicilio__region': 'Region',
-    'tipo_reporte': 'Tipo de Reporte',
-    'cantidad': 'Cantidad',
-    'fecha': 'Fecha'
+        'id_usuario__username': 'Usuario',
+        'id_domicilio__region': 'Region',
+        'tipo_reporte': 'Tipo de Reporte',
+        'cantidad': 'Cantidad',
+        'fecha': 'Fecha'
     }, inplace=True)
-    
-    if df.empty: #revisa que exista informacion
-        return render(request,'dashboard.html',{
-            'empty' : True
-        })
-    
-    #Preparar los datos para convertilos en graficas
+
+    if df.empty:
+        return render(request, 'dashboard.html', {'empty': True})
+
+    # --- Preparar datos ---
     df['Fecha'] = pd.to_datetime(df['Fecha'])
-    df['mes'] = df['Fecha'].dt.to_period('M').astype(str)
-    
-    #Generar graficas
-    graf1 = px.line(df, x='Fecha', y='Cantidad', color='Usuario',title='Tendecia de Consumo por Usuario')
-    graf2 = px.bar(df.groupby(['Usuario','Tipo de Reporte'])
-                   ['Cantidad'].mean().reset_index(),x='Usuario', y='Cantidad',
-                   color='Tipo de Reporte',title='Promedio por usuario y Tipo de reporrte')
-    graf3 = px.pie(df, names='Region', title='Distribucion por region')
-    graf4 = px.box(df, x='Usuario', y='Cantidad', title='Distribucion de consumo por usuario')
-    #Regresa a la vista las graficas generadas
-    context = {#
-        'graf1' : graf1.to_json(),
-        'graf2' : graf2.to_json(),
-        'graf3' : graf3.to_json(),
-        'graf4' : graf4.to_json(),
+    df['mes_num'] = df['Fecha'].dt.month
+    df['Cantidad'] = pd.to_numeric(df['Cantidad'], errors='coerce')
+    df.dropna(subset=['Cantidad'], inplace=True)
+
+    # --- Gráficas principales ---
+    graf1 = px.line(df, x='Fecha', y='Cantidad', color='Usuario', title='Tendencia de Consumo por Usuario')
+    graf2 = px.bar(df.groupby(['Usuario', 'Tipo de Reporte'])['Cantidad']
+                   .mean().reset_index(),
+                   x='Usuario', y='Cantidad', color='Tipo de Reporte',
+                   title='Promedio por Usuario y Tipo de Reporte')
+    graf3 = px.pie(df, names='Region', title='Distribución por Región')
+    graf4 = px.box(df, x='Usuario', y='Cantidad', title='Distribución del Consumo por Usuario')
+
+    # --- Contexto para el template ---
+    context = {
+        'graf1': graf1.to_json(),
+        'graf2': graf2.to_json(),
+        'graf3': graf3.to_json(),
+        'graf4': graf4.to_json(),
     }
+
+    return render(request, 'dashboard.html', context)
+
+def procesar_regresion(reportes, usuario=None):#Vista que procesa los datos para guardar en la base de datos
+    #Recibe y procesa los datos antes de guardar en la base datos
+    df = pd.DataFrame(list(reportes.values('fecha', 'cantidad')))
+    if df.empty:
+        return None
+
+    df['fecha'] = pd.to_datetime(df['fecha'], errors='coerce')
+    df['cantidad'] = pd.to_numeric(df['cantidad'], errors='coerce')
+    df = df.dropna(subset=['fecha', 'cantidad'])
+    df = df[df['cantidad'] > 0]
+    if df.empty:
+        return None
+
+    df['mes_num'] = df['fecha'].dt.month
+    df_mes = df.groupby('mes_num', as_index=False)['cantidad'].mean().sort_values('mes_num')
+    if len(df_mes) < 2:
+        return None
+
+    X = df_mes[['mes_num']]
+    y = df_mes['cantidad']
+
+    modelo = LinearRegression()
+    modelo.fit(X, y)
+    y_pred = modelo.predict(X)
+
+    r2 = r2_score(y, y_pred)
+    mse = mean_squared_error(y, y_pred)
+    b0 = modelo.intercept_
+    b1 = modelo.coef_[0]
+    prediccion = modelo.predict([[X['mes_num'].max() + 1]])[0]
+
+    # Guarda las metricas automaticamente
+    RegresionMetricas.objects.create(
+        usuario=usuario,
+        r2=r2,
+        mse=mse,
+        b0=b0,
+        b1=b1,
+        prediccion=prediccion
+    )
+    #Retorna los elementos listos
+    return {
+        'r2': round(r2, 3),
+        'mse': round(mse, 2),
+        'b0': round(b0, 3),
+        'b1': round(b1, 3),
+        'prediccion': round(prediccion, 2),
+        'datos': df_mes.to_dict(orient='records')
+    }
+
+def regresion_lineal(request):#Vista que aplica el algoritmo de regresion lineal a un solo usuario
+    #Obtiene los datos desde la base de datos
+    reportes = consumoagua.objects.filter(id_usuario=request.user).select_related('id_domicilio')
+    df = pd.DataFrame(list(reportes.values('fecha', 'cantidad')))
+
+    if df.empty:
+        return render(request, 'regresion.html', {'empty': True})
+
+    #Limpia los  datos
+    df['fecha'] = pd.to_datetime(df['fecha'], errors='coerce')
+    df['cantidad'] = pd.to_numeric(df['cantidad'], errors='coerce')
+    df = df.dropna(subset=['fecha', 'cantidad'])
+    df = df[df['cantidad'] > 0]
+
+    if df.empty:
+        return render(request, 'regresion.html', {'empty': True})
+
+    #Agrupa por mes
+    df['mes_num'] = df['fecha'].dt.month
+    df_mes = df.groupby('mes_num', as_index=False)['cantidad'].mean()
+
+    if len(df_mes) < 2:
+        return render(request, 'regresion.html', {
+            'empty': True,
+            'mensaje': 'Se necesitan al menos 2 meses de datos para la regresión.'
+        })
+
+    #Prepara las variables para el modelo
+    X = df_mes[['mes_num']]
+    y = df_mes['cantidad']
+
+    #Entrena a el modelo
+    modelo = LinearRegression()
+    modelo.fit(X, y)
+
+    #Calcula predicciones y metricas
+    y_pred = modelo.predict(X)
+    r2 = r2_score(y, y_pred)
+    mse = mean_squared_error(y, y_pred)
+
+    #Obtiene los coeficientes del modelo
+    b0 = modelo.intercept_      # Intercepto (β₀)
+    b1 = modelo.coef_[0]        # Pendiente (β₁)
+
+    #Calcula las predicciones para el siguiente mes
+    mes_siguiente = X['mes_num'].max() + 1
+    prediccion_futura = modelo.predict([[mes_siguiente]])[0]
     
-    return render(request,'dashboard.html', context)
+    usuario_data = procesar_regresion(reportes, request.user)
+
+    #Prepara los datos para la vista
+    context = {
+        'r2': round(r2, 3),
+        'mse': round(mse, 2),
+        'prediccion': round(prediccion_futura, 2),
+        'b0': round(b0, 3),
+        'b1': round(b1, 3),
+        'datos': df_mes.to_dict(orient='records'),
+        'usuario': usuario_data,
+        'explicacion': (
+            "Se aplicó un modelo de regresion lineal simple para estimar la tendencia del consumo "
+            "mensual de agua. El modelo ajusta una linea recta a los valores promedio por mes, "
+            "evaluando su precision mediante el coeficiente de determinacion (R²) y el error cuadratico medio (MSE). "
+            "Finalmente, se realizó una predicción para el siguiente mes basada en la tendencia calculada."
+        )
+    }
+
+    #Lo envia a el template
+    return render(request, 'regresion.html', context)
+
+def regresion_global(request):#Vista que aplica el algoritmo de regresion lineal para todos los usuarios
+    #Obtiene los datos desde la base de datos
+    reportes = consumoagua.objects.all()
+    df = pd.DataFrame(list(reportes.values('fecha', 'cantidad')))
+
+    if df.empty:
+        return render(request, 'regresion_global.html', {'empty': True})
+
+    #Realiza Limpieza de datos
+    df['fecha'] = pd.to_datetime(df['fecha'], errors='coerce')
+    df['cantidad'] = pd.to_numeric(df['cantidad'], errors='coerce')
+    df = df.dropna(subset=['fecha', 'cantidad'])
+    df = df[df['cantidad'] > 0]
+
+    if df.empty:
+        return render(request, 'regresion_global.html', {'empty': True})
+
+    # Agrupaciones por mes
+    df['mes_num'] = df['fecha'].dt.month
+    df_mes = df.groupby('mes_num', as_index=False)['cantidad'].mean()
+
+    if len(df_mes) < 2:
+        return render(request, 'regresion_global.html', {
+            'empty': True,
+            'mensaje': 'Se necesitan al menos 2 meses de datos para la regresión.'
+        })
+
+    # Prepara las variables para el modelo
+    X = df_mes[['mes_num']]
+    y = df_mes['cantidad']
+
+    #Entrenamiento del modelo
+    modelo = LinearRegression()
+    modelo.fit(X, y)
+
+    # Calcula predicciones y metricas
+    y_pred = modelo.predict(X)
+    r2 = r2_score(y, y_pred)
+    mse = mean_squared_error(y, y_pred)
+
+    #Obtiene coeficientes del modelo
+    b0 = modelo.intercept_      # Intercepto (β₀)
+    b1 = modelo.coef_[0]        # Pendiente (β₁)
+
+    #Calcula las predicciones para el siguiente mes
+    mes_siguiente = X['mes_num'].max() + 1
+    prediccion_futura = modelo.predict([[mes_siguiente]])[0]
+    
+    global_data = procesar_regresion(reportes, None)
+
+    #Prepara los datos para la vista
+    context = {
+        'r2': round(r2, 3),
+        'mse': round(mse, 2),
+        'prediccion': round(prediccion_futura, 2),
+        'b0': round(b0, 3),
+        'b1': round(b1, 3),
+        'datos': df_mes.to_dict(orient='records'),
+        'global': global_data,
+        'explicacion': (
+            "Se aplicó un modelo de regresion lineal simple para estimar la tendencia del consumo "
+            "mensual de agua. El modelo ajusta una linea recta a los valores promedio por mes, "
+            "evaluando su precision mediante el coeficiente de determinacion (R²) y el error cuadratico medio (MSE). "
+            "Finalmente, se realizo una prediccion para el siguiente mes basada en la tendencia calculada."
+        )
+    }
+
+    #Lo envia a el template
+    return render(request, 'regresion_global.html', context)
+
+def historial_metricas(request):#Vista para ver las metricas
+    metricas = RegresionMetricas.objects.filter(usuario=request.user).order_by('-fecha_entrenamiento')
+    return render(request, 'historial_metricas.html', {'metricas': metricas})
+
 
 
