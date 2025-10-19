@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User#importando la tabla usuario para la relacion
 from django.core.validators import MinValueValidator, MaxValueValidator
+from datetime import datetime
 
 # Create your models here.
 class domicilior(models.Model): #Tabla domicilio
@@ -192,6 +193,22 @@ class RegresionMetricas(models.Model):#Tabla para guardar los datos del algorimt
     def __str__(self):
         user_display = self.usuario.username if self.usuario else "Global"
         return f"Métricas {user_display} - {self.fecha_entrenamiento.strftime('%d/%m/%Y %H:%M')}"
+
+class ClasificacionBayes(models.Model):#Tabla par guardar los datos del algoritmo de Bayes
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
+    consumo = models.FloatField()
+    categoria = models.CharField(max_length=50)
+    fecha_prediccion = models.DateTimeField(default=datetime.now)
+
+    def __str__(self):
+        return f"{self.usuario.username} - {self.categoria} ({self.consumo} m³)"
+
+class EntrenamientoBayes(models.Model):#Tabla para reentrenar el modelo anterior
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
+    fecha_entrenamiento = models.DateTimeField(default=datetime.now)
+
+    def __str__(self):
+        return f"{self.usuario.username} - {self.fecha_entrenamiento.strftime('%Y-%m-%d %H:%M')}"
 
 
 class Foto(models.Model): #Modelo para las fotos 

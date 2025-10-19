@@ -42,4 +42,7 @@ urlpatterns = [
     path('regresion/', views.regresion_lineal, name='regresion'),#URL para aplicar el algoritmo de regresion por usuario
     path('regresion_global/', views.regresion_global, name='regresion_global'),#URL para aplicar el algoritmo de regresion de manera global
     path('historial_metricas/',views.historial_metricas, name='historial_metricas'),#URL para ver las metricas del modelo
+    path('bayes/', views.clasificacion_bayes, name='bayes'),#Urle para aplicar el modelo de Bayes
+    path('historial_bayes/', views.historial_bayes, name='historial_bayes'),#Url para ver el historial del modeloBayes
+    path('reentrenar_bayes/', views.reentrenar_bayes, name='reentrenar_bayes'),#Url para reentrenar el modelo de Bayes
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) #Se agrega para poder agregar las imagenes

@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required#Proteger las rutas
 from django.db import IntegrityError #Errores en DB
 from django.http import HttpResponse, FileResponse # mensajes en pantalla
 from .formdom import RegistroDom, RegistroCosumo #Traer mis formularios
-from .models import Foto, consumoagua, domicilior, RegresionMetricas #Traer mis modelos
+from .models import Foto, consumoagua, domicilior, RegresionMetricas, ClasificacionBayes, EntrenamientoBayes #Traer mis modelos
 from django.core.paginator import Paginator #Agregar paginacion en la tabla
 import openpyxl#Para trabajar con archivos de excel
 import io  #Trabajar con los PDF
@@ -25,8 +25,10 @@ from reportlab.lib.units import inch#Crear PDF
 from django.utils import timezone #manejo de fechas y horas
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle #Estilos en el PDF
 from reportlab.lib.styles import getSampleStyleSheet #Trabajo en PDF
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.linear_model import LinearRegression #Trae el algoritmo de Regresion lineal
+from sklearn.metrics import mean_squared_error, r2_score #Auxiliares para los algoritmos
+from sklearn.naive_bayes import GaussianNB #Trae el algoritmo de Bayes
+from sklearn.preprocessing import StandardScaler #Auxiliar de los algoritmos
 
 
 
@@ -705,6 +707,100 @@ def regresion_global(request):#Vista que aplica el algoritmo de regresion lineal
 def historial_metricas(request):#Vista para ver las metricas
     metricas = RegresionMetricas.objects.filter(usuario=request.user).order_by('-fecha_entrenamiento')
     return render(request, 'historial_metricas.html', {'metricas': metricas})
+
+def reentrenar_bayes(request):#Vista para que el usuario reentrene al modelo
+    #Permite reentrenar manualmente el modelo Naive Bayes
+    if request.method == 'POST':
+        usuario = request.user
+
+        #Obteniene los datos del usuario
+        reportes = consumoagua.objects.select_related('id_usuario').filter(id_usuario=usuario)
+        df = pd.DataFrame(list(reportes.values('cantidad')))
+
+        if df.empty:
+            messages.warning(request, 'No hay datos suficientes para reentrenar el modelo.')
+            return redirect('bayes')
+
+        #Entrenamiento del modelo
+        df['categoria'] = pd.qcut(df['cantidad'], q=3, labels=['Bajo', 'Medio', 'Alto'])
+        X = df[['cantidad']].values
+        y = df['categoria'].values
+
+        modelo = GaussianNB()
+        modelo.fit(X, y)
+
+        # Guardar la nueva fecha de entrenamiento
+        EntrenamientoBayes.objects.create(usuario=usuario, fecha_entrenamiento=datetime.now())
+
+        #Guarda las clasificaciones actualizadas
+        ClasificacionBayes.objects.filter(usuario=usuario).delete()
+        for valor, clase in zip(X.flatten(), y):
+            ClasificacionBayes.objects.create(usuario=usuario, consumo=valor, categoria=clase)
+        #Mensaje si el modelo se actualizo correctamente
+        messages.success(request, 'El modelo Bayesiano fue reentrenado correctamente.')
+        return redirect('bayes')
+
+def clasificacion_bayes(request):#Vista con la logica necesaria para ejecutar el modelo de Bayes
+    usuario = request.user  # revisa credendicales del usuario 
+    reportes = consumoagua.objects.select_related('id_domicilio', 'id_usuario').filter(id_usuario=usuario)
+
+    df = pd.DataFrame(list(reportes.values('cantidad', 'id_usuario__username', 'id_domicilio__region')))
+    if df.empty:
+        return render(request, 'bayes.html', {'empty': True})
+
+    #Prepara los datos
+    df['categoria'] = pd.qcut(df['cantidad'], q=3, labels=['Bajo', 'Medio', 'Alto'])
+    X = df[['cantidad']].values
+    y = df['categoria'].values
+
+    # Realiza una escala de  valores
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+
+    #Entrenamiento del  modelo
+    modelo = GaussianNB()
+    modelo.fit(X_scaled, y)
+
+    #Prediccion para los nuevos valores
+    nuevos = np.array([[10], [50], [100], [500], [1000]])
+    nuevos_scaled = scaler.transform(nuevos)
+    predicciones = modelo.predict(nuevos_scaled)
+
+    resultados = list(zip(nuevos.flatten(), predicciones))
+
+    #Guarda las predicciones en la base de datos
+    for valor, categoria in resultados:
+        ClasificacionBayes.objects.create(
+            usuario=usuario,
+            consumo=valor,
+            categoria=categoria
+        )
+
+    #Realiza un Conteo distribuciones
+    conteo = df['categoria'].value_counts().reset_index()
+    conteo.columns = ['Nivel', 'Cantidad']
+    #Se aplica el reentrenamiento
+    ultima_fecha = EntrenamientoBayes.objects.filter(usuario=usuario).order_by('-fecha_entrenamiento').first()
+
+    #Envia los datos al template
+    context = {
+        'conteo': conteo.to_dict(orient='records'),
+        'predicciones': resultados,
+        'ultima_fecha': ultima_fecha.fecha_entrenamiento if ultima_fecha else None,
+        'explicacion': (
+            "El modelo Naive Bayes clasifica automaticamente los consumos del usuario "
+            "en tres niveles (bajo, medio, alto) según los datos historicos. "
+            "Ademas, guarda cada prediccion realizada en la base de datos para "
+            "permitir el seguimiento y analisis del historial."
+        )
+    }
+
+    return render(request, 'bayes.html', context)
+
+def historial_bayes(request):#Vista del historial del modelo
+    historial = ClasificacionBayes.objects.filter(usuario=request.user).order_by('-fecha_prediccion')
+    return render(request, 'historial_bayes.html', {'historial': historial})
+
 
 
 

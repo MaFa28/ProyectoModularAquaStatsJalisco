@@ -1,0 +1,99 @@
+<!DOCTYPE html> <!--Plantilla para todas las paginas-->
+<html lang="es">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>AquaStatsJalisco</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    </head>
+    
+    <body>
+            <nav class="navbar navbar-expand-lg navbar-ligth" style="background-color: #1095f4ff;">
+                <div class="container-fluid">
+                    <a class="navbar-brand" href="/">AquaStats</a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+                        <div class="navbar-nav ms-auto">
+                            {% if user.is_authenticated %}<!--Condicional para mostrar si el usuario esta logeado-->
+                                <a class="nav-link" href="/salir">Salir</a>
+                            {% else %}
+                                <a class="nav-link" href="/sesion">Iniciar Sesion</a>
+                                <a class="nav-link" href="/registro">Registro</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </nav> <!--Barra de navegacion-->
+
+            <div class="container mt-4"><!--Clasificacion Bayesiana-->
+                <h3 class="text-center mb-4">Clasificacion Bayesiana del Consumo</h3>
+
+                {% if empty %}
+                    <div class="alert alert-warning text-center">No hay datos suficientes para el analisis.</div>
+                {% else %}
+                    <h5 class="fw-bold">Distribucion de niveles de consumo:</h5>
+                    <table class="table table-bordered table-striped text-center"><!--Tabla de bayes-->
+                        <thead class="table-dark"><!--Columnas de la tabla-->
+                            <tr>
+                                <th>Nivel</th>
+                                <th>Cantidad de registros</th>
+                            </tr>
+                        </thead>
+                        <tbody><!--Filas de la tabla-->
+                            {% for row in conteo %}
+                                <tr>
+                                    <td>{{ row.Nivel }}</td>
+                                    <td>{{ row.Cantidad }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    <h5 class="fw-bold mt-4">Predicciones de ejemplo:</h5>
+                    <table class="table table-hover text-center"><!--Tabla de ejemplo-->
+                        <thead class="table-secondary"><!--Columnas de la tabla-->
+                            <tr>
+                                <th>Consumo (m³)</th>
+                                <th>Clasificación</th>
+                            </tr>
+                        </thead>
+                        <tbody><!--Filas de la tabla-->
+                            {% for valor, categoria in predicciones %}
+                                <tr>
+                                    <td>{{ valor }}</td>
+                                    <td>{{ categoria }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    <div class="alert alert-info mt-4"><!--Explica como funciona la clasificacion-->
+                        <strong>Explicacion:</strong><br>
+                        {{ explicacion }}
+                    </div>
+                {% endif %}
+
+                    <div class="text-center mt-4"><!--Botones de accion-->
+                            <a href="{% url 'dashboard_global' %}" class="btn btn-danger">Volver</a>
+                            <a href="{% url 'historial_bayes' %}" class="btn btn-success">Historial</a>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <form action="{% url 'reentrenar_bayes' %}" method="POST">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-primary">Reentrenar modelo</button>
+                                </form>
+                            </div>
+
+                            {% if ultima_fecha %}
+                                <p class="text-muted"> Ultimo entrenamiento: {{ ultima_fecha|date:"d M Y H:i" }}</p>
+                            {% endif %}
+                    </div>
+            </div>
+
+                     
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+        
+    </body>
+</html>
