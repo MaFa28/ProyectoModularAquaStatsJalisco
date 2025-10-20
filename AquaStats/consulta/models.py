@@ -210,6 +210,15 @@ class EntrenamientoBayes(models.Model):#Tabla para reentrenar el modelo anterior
     def __str__(self):
         return f"{self.usuario.username} - {self.fecha_entrenamiento.strftime('%Y-%m-%d %H:%M')}"
 
+class KMeansResultado(models.Model):#Tabla para guardar los datos del algoritmo de Kmeans
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
+    cluster = models.IntegerField()
+    promedio_consumo = models.FloatField()
+    fecha_analisis = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.usuario.username} - Cluster {self.cluster}"
+
 
 class Foto(models.Model): #Modelo para las fotos 
     titulo = models.CharField(max_length=100, blank=True, null=True)

@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required#Proteger las rutas
 from django.db import IntegrityError #Errores en DB
 from django.http import HttpResponse, FileResponse # mensajes en pantalla
 from .formdom import RegistroDom, RegistroCosumo #Traer mis formularios
-from .models import Foto, consumoagua, domicilior, RegresionMetricas, ClasificacionBayes, EntrenamientoBayes #Traer mis modelos
+from .models import recomendaciones, consumoagua, domicilior, RegresionMetricas, ClasificacionBayes, EntrenamientoBayes, KMeansResultado #Traer mis modelos
 from django.core.paginator import Paginator #Agregar paginacion en la tabla
 import openpyxl#Para trabajar con archivos de excel
 import io  #Trabajar con los PDF
@@ -29,8 +29,11 @@ from sklearn.linear_model import LinearRegression #Trae el algoritmo de Regresio
 from sklearn.metrics import mean_squared_error, r2_score #Auxiliares para los algoritmos
 from sklearn.naive_bayes import GaussianNB #Trae el algoritmo de Bayes
 from sklearn.preprocessing import StandardScaler #Auxiliar de los algoritmos
-from django.conf import settings
-import os
+from sklearn.cluster import KMeans #Trae el ALgoritmo de Kmeans
+from django.db.models import Avg, Count, Max #Herramientas auxiliares de Kmeans
+from django.conf import settings #Herramientas auxiliares de Kmeans
+import os#Herramientas auxiliares de Kmeans
+from datetime import date#Herramientas auxiliares de Kmeans
 
 
 
@@ -47,23 +50,23 @@ def home(request):  # Vista del Inicio
         },
         'img2.png': {
             'titulo': 'Jalisco Dia 0',
-            'descripcion': 'Monitorea tu consumo y detecta patrones de ahorro.'
+            'descripcion': 'Jalisco esta en una situacion hidrica cambiante que lo mantiene de momento alejado del "DIA 0" debido a las lluvias del 2025.'
         },
         'img3.jpeg': {
-            'titulo': 'Nuestra Topografia',
-            'descripcion': 'Analizamos información para optimizar el uso del recurso.'
+            'titulo': 'Estrés hidráulico',
+            'descripcion': 'Causas: "Acuíferos Sobreexplotados, Crecimiento poblacional y urbano, Uso agrícola intensivo, Impacto del cambio climático, Gestión y distribución"'
         },
         'img4.png': {
             'titulo': 'Nuestros Rios',
-            'descripcion': 'Cada gota cuenta: participa en la conservación del agua.'
+            'descripcion': 'Jalisco cuenta con una gran red hidraulica, entre los rios mas importantes se encuentra: "Rio Lerma-Santiago, Ameca, Verde, Bolaños, Costa"'
         },
         'img5.png': {
             'titulo': 'Nuestros Mantso Acuiferos',
-            'descripcion': 'Cada gota cuenta: participa en la conservación del agua.'
+            'descripcion': 'Jalisco cuenta con 76 mantos acuiferos los cuales se encargan de suministrar agua a zonas agricolas y a las principales ciudades, entre los que destacan "Toluqilla, Atemajac, La Barca, La Costa, Los Altos", los cuales ante el creciemiento de la poblacion se han visto afectados, por las actividades cotidianas, de riego y industriales'
         },
         'img6.png': {
             'titulo': 'Nuestros Lagos y Lagunas',
-            'descripcion': 'Cada gota cuenta: participa en la conservación del agua.'
+            'descripcion': 'El "Lago de Chapala" abastece el "60%" al Area Metropolitana lo cual causa un estres hidrico, el cual se ve reflejado año con año, ademas de del "Lago de Chapala" Jalisco cuenta con "Laguna de Cajititlán, Zapotlán, Sayula, Atotonilco, San Marcos, Zacoalco"'
         },
     }
 
@@ -658,6 +661,32 @@ def regresion_lineal(request):#Vista que aplica el algoritmo de regresion lineal
     prediccion_futura = modelo.predict([[mes_siguiente]])[0]
     
     usuario_data = procesar_regresion(reportes, request.user)
+    
+    #Recomendaciones automaticas
+    promedio_actual = y.mean()
+    if prediccion_futura > promedio_actual * 1.15:
+        texto = (
+            f"Tu consumo proyectado para el próximo mes ({prediccion_futura:.2f} m³) "
+            f"supera en más del 15% tu promedio actual ({promedio_actual:.2f} m³). "
+            "Revisa posibles fugas o reduce el uso en horarios de alta demanda."
+        )
+    elif prediccion_futura < promedio_actual * 0.85:
+        texto = (
+            f"Se proyecta una reduccion en tu consumo ({prediccion_futura:.2f} m³). "
+            "¡Excelente! Continua con tus habitos de ahorro de agua."
+        )
+    else:
+        texto = (
+            f"Tu consumo proyectado ({prediccion_futura:.2f} m³) se mantiene estable "
+            "en relacion con tu promedio. No se detectan cambios significativos."
+        )
+
+    #Guardar o actualizar la recomendacion
+    recomendaciones.objects.update_or_create(
+        id_usuario=request.user,
+        fecha=date.today(),
+        defaults={'texto': texto}
+    )
 
     #Prepara los datos para la vista
     context = {
@@ -668,6 +697,7 @@ def regresion_lineal(request):#Vista que aplica el algoritmo de regresion lineal
         'b1': round(b1, 3),
         'datos': df_mes.to_dict(orient='records'),
         'usuario': usuario_data,
+        'recomendacion': texto,
         'explicacion': (
             "Se aplicó un modelo de regresion lineal simple para estimar la tendencia del consumo "
             "mensual de agua. El modelo ajusta una linea recta a los valores promedio por mes, "
@@ -821,6 +851,34 @@ def clasificacion_bayes(request):#Vista con la logica necesaria para ejecutar el
             categoria=categoria
         )
 
+    # Obtiene la categoria predominante del usuario
+    categoria_usuario = df['categoria'].mode()[0]
+
+    #Genera recomendaciones
+    if categoria_usuario == 'Bajo':
+        texto = (
+            f"Tu consumo promedio es bajo. ¡Excelente trabajo! "
+            "Continua con tus habitos sostenibles para conservar el agua."
+        )
+    elif categoria_usuario == 'Medio':
+        texto = (
+            f"Tu consumo esta en el rango medio. Considera revisar fugas y optimizar tu consumo "
+            "en actividades diarias para reducirlo gradualmente."
+        )
+    else:
+        texto = (
+            f"Tu consumo se encuentra en el rango alto. Te recomendamos revisar tus instalaciones "
+            "y adoptar practicas de ahorro para disminuir el gasto de agua."
+        )
+
+    # Guardar la recomendacion ---
+    recomendaciones.objects.update_or_create(
+        id_usuario=usuario,
+        fecha=date.today(),
+        defaults={'texto': texto}
+    )
+
+    
     #Realiza un Conteo distribuciones
     conteo = df['categoria'].value_counts().reset_index()
     conteo.columns = ['Nivel', 'Cantidad']
@@ -832,6 +890,7 @@ def clasificacion_bayes(request):#Vista con la logica necesaria para ejecutar el
         'conteo': conteo.to_dict(orient='records'),
         'predicciones': resultados,
         'ultima_fecha': ultima_fecha.fecha_entrenamiento if ultima_fecha else None,
+        'recomendacion': texto,
         'explicacion': (
             "El modelo Naive Bayes clasifica automaticamente los consumos del usuario "
             "en tres niveles (bajo, medio, alto) según los datos historicos. "
@@ -845,6 +904,161 @@ def clasificacion_bayes(request):#Vista con la logica necesaria para ejecutar el
 def historial_bayes(request):#Vista del historial del modelo
     historial = ClasificacionBayes.objects.filter(usuario=request.user).order_by('-fecha_prediccion')
     return render(request, 'historial_bayes.html', {'historial': historial})
+
+def kmeans_view(request):#Vista con la logica necesaria para ejecutar el modelo K-Means
+    #Numero de clusteres
+    k = int(request.GET.get('k', 3))
+
+    #Obtiene los datos de la base de datos
+    reportes = consumoagua.objects.select_related('id_usuario', 'id_domicilio')
+    df = pd.DataFrame(list(reportes.values(
+        'id_usuario__username', 'cantidad', 'id_domicilio__region'
+    )))
+
+    if df.empty:
+        return render(request, 'kmeans.html', {'empty': True})
+
+    # Renombra las columnas
+    df = df.rename(columns={
+        'id_usuario__username': 'Usuario',
+        'id_domicilio__region': 'Región',
+        'cantidad': 'Consumo'
+    })
+
+    df = df.dropna(subset=['Consumo'])
+    df = df[df['Consumo'] > 0]
+    #Si no existe informacion
+    if df.empty:
+        return render(request, 'kmeans.html', {'empty': True})
+
+    #Aplica K-Means
+    kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
+    df['Cluster'] = kmeans.fit_predict(df[['Consumo']])
+    
+    # Guardar los resultados en la base de datos
+    # --- Buscar el consumo del usuario logeado ---
+    usuario_actual = request.user.username
+    df_usuario = df[df['Usuario'] == usuario_actual]
+
+    recomendacion_usuario = None  # solo para el usuario actual
+
+    for _, row in df.iterrows():
+        try:
+            usuario = User.objects.get(username=row['Usuario'])
+
+            # Guardar resultados de K-Means
+            KMeansResultado.objects.update_or_create(
+                usuario=usuario,
+                defaults={
+                    'cluster': int(row['Cluster']),
+                    'promedio_consumo': float(row['Consumo'])
+                }
+            )
+
+            # Generar texto de recomendacion 
+            cluster = int(row['Cluster'])
+            consumo = float(row['Consumo'])
+
+            if cluster == 0:
+                texto = (
+                    f"Tu consumo actual ({consumo:.2f} m³) esta entre los mas bajos. "
+                    "Excelente trabajo, sigue cuidando el agua."
+                )
+            elif cluster == 1:
+                texto = (
+                    f"Tu consumo ({consumo:.2f} m³) es promedio. "
+                    "Podrias reducirlo ajustando habitos diarios o revisando fugas menores."
+                )
+            else:
+                texto = (
+                    f"Tu consumo ({consumo:.2f} m³) esta entre los mas altos. "
+                    "Te recomendamos revisar fugas y considerar medidas de ahorro."
+                )
+
+            # Guardar recomendación en BD solo para cada usuario
+            recomendaciones.objects.update_or_create(
+                id_usuario=usuario,
+                fecha=date.today(),
+                defaults={'texto': texto}
+            )
+
+            # Si es el usuario logeado, mostrarla
+            if usuario.username == usuario_actual:
+                recomendacion_usuario = texto
+
+        except User.DoesNotExist:
+            continue
+
+    #Crea lla tabla resumen
+    resumen = (
+        df.groupby('Cluster')
+        .agg({'Consumo': ['mean', 'min', 'max', 'count']})
+        .reset_index()
+    )
+    resumen.columns = ['Cluster', 'Promedio', 'Mínimo', 'Máximo', 'Cantidad']
+
+    #Grafica
+    grafica = px.scatter(
+        df,
+        x='Usuario', y='Consumo',
+        color=df['Cluster'].astype(str),
+        hover_data=['Región'],
+        title=f'Agrupamiento K-Means del Consumo de Agua (k = {k})'
+    )
+
+    #Agrupa la informacion para enviarla a la vista
+    context = {
+        'grafica': grafica.to_json(),
+        'tabla': resumen.to_dict(orient='records'),
+        'k': k,
+        'recomendacion_usuario': recomendacion_usuario,
+    }
+
+    return render(request, 'kmeans.html', context)
+
+def historial_kmeans(request):#Vista del historial del modelo K-Means
+   
+    #Obtiene los datos de la Base de Datos
+    resultados = KMeansResultado.objects.select_related('usuario').order_by('-fecha_analisis')
+
+    if not resultados.exists():
+        return render(request, 'historial_kmeans.html', {'empty': True})
+
+    #Agrupa los datos por usuario para ver evolucion
+    resumen = (
+        KMeansResultado.objects.values('usuario__username')
+        .annotate(
+            total_analisis=Count('id'),
+            ultimo_cluster=Max('cluster'),
+            promedio_consumo=Avg('promedio_consumo')
+        )
+        .order_by('usuario__username')
+    )
+
+    # Crear DataFrame para graficar la evolucion temporal
+    df = pd.DataFrame(list(resultados.values(
+        'usuario__username', 'cluster', 'promedio_consumo', 'fecha_analisis'
+    )))
+
+    df['fecha_analisis'] = pd.to_datetime(df['fecha_analisis'])
+
+    #Grafica de la evolucion del consumo
+    grafica = px.line(
+        df,
+        x='fecha_analisis',
+        y='promedio_consumo',
+        color='usuario__username',
+        markers=True,
+        title='Evolución del Consumo Promedio por Usuario'
+    )
+    #Agrupa la informacion y la envia a la vista
+    context = {
+        'resumen': resumen,
+        'resultados': resultados,
+        'grafica': grafica.to_json(),
+    }
+
+    return render(request, 'historial_kmeans.html', context)
 
 
 

@@ -155,6 +155,13 @@
                     historicos.</p>
                 </div>
 
+                {% if recomendacion %}<!--recomendacion-->
+                    <div class="alert alert-info mt-4">
+                        <strong>Recomendación:</strong> {{ recomendacion }}
+                    </div>
+                {% endif %}
+
+
                 <div class="text-center mt-4"><!--Botones-->
                     <a href="{% url 'historial_metricas' %}" class="btn btn-info w-100 mb-1">Historial de Metricas</a>
                      <a href="/dashboard" class="btn btn-danger w-100">Volver</a>

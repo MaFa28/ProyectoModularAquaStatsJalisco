@@ -45,6 +45,8 @@ urlpatterns = [
     path('bayes/', views.clasificacion_bayes, name='bayes'),#Urle para aplicar el modelo de Bayes
     path('historial_bayes/', views.historial_bayes, name='historial_bayes'),#Url para ver el historial del modeloBayes
     path('reentrenar_bayes/', views.reentrenar_bayes, name='reentrenar_bayes'),#Url para reentrenar el modelo de Bayes
+    path('kmeans/', views.kmeans_view, name='kmeans'),#URL para aplicar el modelo K-Means
+    path('kmeans/historial/', views.historial_kmeans, name='historial_kmeans'),#URL para ver el historial del K-Means
 ] 
 
 #Se agrega para poder agregar las imagenes

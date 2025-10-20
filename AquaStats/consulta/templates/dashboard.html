@@ -26,7 +26,7 @@
                 transition: 0.3s;
             }
             .nav-link:hover {
-                color: #ffdd57 !important;
+                color: #000000ff !important;
             }
             .carousel-item img {
                 height: 500px;
@@ -101,9 +101,10 @@
                         <button class="btn btn-primary w-100 mb-1" type="submit">Filtrar</button>
                         <a href="/dashboard" class="btn btn-secondary w-100 mb-1">Limpiar</a>
                         <a href="/perfil" class="btn btn-danger w-100 mb-1">Regresar</a>
-                        <a href="{% url 'regresion' %}" class="btn btn-warning w-100 mb-1">Analisis de regresion Individual</a>
-                        <a href="{% url 'regresion_global' %}" class="btn btn-warning w-100 mb-1">Analisis de regresión Global</a>
-                        <a href="{% url 'bayes' %}" class="btn btn-success w-100 ">Clasificacion de Bayes</a>
+                        <a href="{% url 'regresion' %}" class="btn btn-info w-100 mb-1">Analisis de Regresion Individual</a>
+                        <a href="{% url 'regresion_global' %}" class="btn btn-info w-100 mb-1 ">Analisis de Regresion Global</a>
+                        <a href="{% url 'bayes' %}" class="btn btn-success w-100 mb-1">Clasificacion de Bayes</a>
+                        <a href="{% url 'kmeans' %}" class="btn btn-success w-100 mb-1">K-Means</a>
                     </div>
 
                 </form>
