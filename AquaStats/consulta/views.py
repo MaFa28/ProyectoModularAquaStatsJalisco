@@ -29,15 +29,60 @@ from sklearn.linear_model import LinearRegression #Trae el algoritmo de Regresio
 from sklearn.metrics import mean_squared_error, r2_score #Auxiliares para los algoritmos
 from sklearn.naive_bayes import GaussianNB #Trae el algoritmo de Bayes
 from sklearn.preprocessing import StandardScaler #Auxiliar de los algoritmos
-
+from django.conf import settings
+import os
 
 
 
 # Create your views here.
+def home(request):  # Vista del Inicio
+    # Ruta de las imagenes
+    carpeta_carrusel = os.path.join(settings.BASE_DIR, 'consulta/static/img/carrusel')
 
-def home(request):#Vista del Inicio
-    fotos = Foto.objects.filter(activo=True)#Pasar el carrusel a la vista
-    return render(request, 'inicio.html',{"fotos" : fotos})
+    # Diccionario de nombres y descripciones
+    descripciones = {
+        'img1.png': {
+            'titulo': 'AquaStats',
+            'descripcion': 'Promovemos el consumo sostenible para un futuro mejor.'
+        },
+        'img2.png': {
+            'titulo': 'Jalisco Dia 0',
+            'descripcion': 'Monitorea tu consumo y detecta patrones de ahorro.'
+        },
+        'img3.jpeg': {
+            'titulo': 'Nuestra Topografia',
+            'descripcion': 'Analizamos información para optimizar el uso del recurso.'
+        },
+        'img4.png': {
+            'titulo': 'Nuestros Rios',
+            'descripcion': 'Cada gota cuenta: participa en la conservación del agua.'
+        },
+        'img5.png': {
+            'titulo': 'Nuestros Mantso Acuiferos',
+            'descripcion': 'Cada gota cuenta: participa en la conservación del agua.'
+        },
+        'img6.png': {
+            'titulo': 'Nuestros Lagos y Lagunas',
+            'descripcion': 'Cada gota cuenta: participa en la conservación del agua.'
+        },
+    }
+
+    # Obtiene la lista de imagenes disponibles
+    imagenes = []
+    if os.path.exists(carpeta_carrusel):
+        for archivo in os.listdir(carpeta_carrusel):
+            if archivo.lower().endswith(('.jpg', '.jpeg', '.png', '.webp')):
+                info = descripciones.get(archivo, {'titulo': archivo, 'descripcion': 'Sin descripción'})
+                imagenes.append({
+                    'archivo': f'img/carrusel/{archivo}',
+                    'titulo': info['titulo'],
+                    'descripcion': info['descripcion']
+                })
+
+    # Ordenar las imágenes alfabéticamente (opcional)
+    imagenes.sort(key=lambda x: x['archivo'])
+
+    return render(request, 'inicio.html', {'imagenes': imagenes})
 
 def sigup(request):#Vista del registro de usuarios
     if request.method == 'GET':#Enviando el formulario a pantalla

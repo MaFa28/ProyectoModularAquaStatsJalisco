@@ -45,4 +45,8 @@ urlpatterns = [
     path('bayes/', views.clasificacion_bayes, name='bayes'),#Urle para aplicar el modelo de Bayes
     path('historial_bayes/', views.historial_bayes, name='historial_bayes'),#Url para ver el historial del modeloBayes
     path('reentrenar_bayes/', views.reentrenar_bayes, name='reentrenar_bayes'),#Url para reentrenar el modelo de Bayes
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) #Se agrega para poder agregar las imagenes
+] 
+
+#Se agrega para poder agregar las imagenes
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

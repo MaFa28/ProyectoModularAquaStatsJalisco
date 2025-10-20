@@ -83,30 +83,34 @@
         </section>
 
         <!--Carrusel de fotos -->
-        <div class="container mb-5">
-            <div id="carouselExampleCaptions" class="carousel slide" data-bs-ride="carousel">
+        <div class="container mt-5">
+            <h2 class="text-center mb-4">Galeria AquaStats</h2>
+
+            {% if imagenes %}
+            <div id="carouselExampleCaptions" class="carousel slide shadow-lg rounded" data-bs-ride="carousel">
+                <!--Indicadores-->
                 <div class="carousel-indicators">
-                    {% for foto in fotos %}<!--Envia las fotos a la vista-->
-                        <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="{{ forloop.counter0 }}" 
-                            {% if forloop.first %}class="active"{% endif %} aria-label="Slide {{ forloop.counter }}"></button>
+                    {% for img in imagenes %}
+                        <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="{{ forloop.counter0 }}"
+                                {% if forloop.first %}class="active"{% endif %}
+                                aria-label="Slide {{ forloop.counter }}"></button>
                     {% endfor %}
                 </div>
 
-                <div class="carousel-inner shadow-lg"><!--Elementos del carrusel de fotos-->
-                    {% for foto in fotos %}
-                        <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                            <img src="{{ foto.imagen.url }}" class="d-block w-100" alt="{{ foto.titulo }}">
-                            {% if foto.titulo or foto.descripcion %}
-                                <div class="carousel-caption d-none d-md-block">
-                                    <h5>{{ foto.titulo }}</h5>
-                                    <p>{{ foto.descripcion }}</p>
-                                </div>
-                            {% endif %}
+                <!--Imagenes-->
+                <div class="carousel-inner rounded">
+                    {% for img in imagenes %}
+                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                        <img src="{% static img.archivo %}" class="d-block w-100" alt="{{ img.titulo }}">
+                        <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded p-2">
+                            <h5>{{ img.titulo }}</h5>
+                            <p>{{ img.descripcion }}</p>
                         </div>
+                    </div>
                     {% endfor %}
                 </div>
 
-                <!--Botones de accion para avanzar o regresar en las fotos-->
+                <!--Controles-->
                 <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="prev">
                     <span class="carousel-control-prev-icon"></span>
                 </button>
@@ -114,6 +118,9 @@
                     <span class="carousel-control-next-icon"></span>
                 </button>
             </div>
+            {% else %}<!--Si no existen imagenes-->
+                <p class="text-center text-muted">No hay imagenes disponibles.</p>
+            {% endif %}
         </div>
 
         <!--Footer-->
