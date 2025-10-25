@@ -1,138 +1,212 @@
 {% load static %}
-<!DOCTYPE html> <!--Plantilla para todas las paginas-->
+<!DOCTYPE html>
 <html lang="es">
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>AquaStatsJalisco</title>
-        <!--Bootstrap-->
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-        <!--Iconos-->
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AquaStatsJalisco</title>
 
-        <style>
-            body {
-                background-color: #f8f9fa;
-            }
-            .navbar {
-                background: linear-gradient(90deg, #007BFF, #1095f4);
-            }
-            .navbar-brand {
-                color: #fff !important;
-                font-weight: bold;
-                font-size: 1.4rem;
-            }
-            .nav-link {
-                color: #f8f9fa !important;
-                transition: 0.3s;
-            }
-            .nav-link:hover {
-                color: #ffdd57 !important;
-            }
-            .carousel-item img {
-                height: 500px;
-                object-fit: cover;
-                border-radius: 10px;
-            }
-            .carousel-caption {
-                background: rgba(0, 0, 0, 0.6);
-                border-radius: 10px;
-            }
-            footer {
-                margin-top: 50px;
-                background: #007bff;
-                color: white;
-                text-align: center;
-                padding: 10px 0;
-            }
-        </style>
-    </head>
-    
-    <body>
-            <!--Navbar-->
-            <nav class="navbar navbar-expand-lg shadow-sm">
-                <div class="container">
-                    <a class="navbar-brand" href="/">
-                        <i class="bi bi-droplet-half"></i> AquaStats
-                    </a>
+    <!-- Bootstrap y Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+    <!--Estilos-->
+    <style>
+      :root{
+        --brand-start:#007BFF;
+        --brand-end:#1095f4;
+      }
+      body{
+        background:#f8f9fa;
+        background-image:
+          radial-gradient(1000px 400px at -10% -10%, rgba(16,149,244,.08), transparent 60%),
+          radial-gradient(800px 350px at 110% 110%, rgba(0,123,255,.08), transparent 60%);
+        min-height:100vh;
+        display:flex; flex-direction:column;
+      }
 
-                    <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                        <span class="navbar-toggler-icon"></span>
-                    </button>
+      /* NAVBAR (no se toca la lógica) */
+      .navbar{ background:linear-gradient(90deg,var(--brand-start),var(--brand-end)); }
+      .navbar-brand{ color:#fff!important; font-weight:700; font-size:1.4rem; }
+      .nav-link{ color:#f8f9fa!important; transition:.2s; }
+      .nav-link:hover{ color:#ffdd57!important; }
 
-                    <div class="collapse navbar-collapse" id="navbarNav">
-                        <div class="navbar-nav ms-auto">
-                            {% if user.is_authenticated %}
-                                <a class="nav-link" href="/salir"><i class="bi bi-box-arrow-right"></i> Salir</a>
-                            {% else %}
-                                <a class="nav-link" href="/sesion"><i class="bi bi-box-arrow-in-right"></i> Iniciar sesión</a>
-                                <a class="nav-link" href="/registro"><i class="bi bi-person-plus"></i> Registrarse</a>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </nav>
-            <!--Fin del Navbar-->
+      main{ flex:1 }
 
-            <div class= "container mt-4"><!--Contiene el formulario-->
-                <div class="d-flex justify-content-center align-items-start flex-wrap">
-                    <!--Inicio del formulario-->
-                            <div class="card p-4 shadow-sm" style="max-width: 400px; flex: 1;">
-                                <!--formulario-->
-                                <form method="POST" class="card card-body mt-5">
-                                    <h1 class="text-center">Reporte Consumo de Agua</h1>
-                                    {% csrf_token %}
-                                    <div class="mb-3"><!--Input de la cantidad-->
-                                        {{ form.cantidad.label_tag }}
-                                        {{ form.cantidad }}
-                                    </div>
-                                    <div class="mb-3"><!--Input del tipo de reporte-->
-                                        {{ form.tipo_reporte.label_tag }}
-                                        {{ form.tipo_reporte }}
-                                    </div>
-                                    <div class="mb-3"> <!--Input de la fecha-->
-                                        {{ form.fecha.label_tag }}
-                                        {{ form.fecha }}
-                                    </div>
-                                    <div class="mb-3"> <!--Input del domicilio-->
-                                        {{ form.id_domicilio.label_tag }}
-                                        {{ form.id_domicilio }}
-                                    </div>
-                                    {% if error %} <!--Si se genera un error lo muestra en pantalla-->
-                                        <div class="alert alert-danger">{{ error }}</div>
-                                    {% endif %}
-                                    <div class="d-grid gap-2">
-                                        <button class="btn btn-success">Enviar</button><!--Boton para guardar la informacion-->
-                                        <a href="/perfil" class="btn btn-danger">Regresar</a>
-                                    </div>
-                                </form>
-                            </div>
-                    <!--Fin formulario-->
-                    
-                    <!--Imagen y instrucciones-->
-                    <div class="card shadow-sm ms-4 mt-3 mt-md-0 p-3" style="flex: 0 0 300px; text-align: center;">
-                            <img src="{% static 'img/medidor.png' %}" alt="Medidor de Agua" style="width: 100%; max-width: 250px; border-radius: 10px;">
-                            <ul class="list-unstyled text-start mt-3" style="font-size: 15px; color: #333;">
-                                <li>¿Como hacer la medicion?</li>
-                                <li>●Primera identifica tu medidor.</li>
-                                <li>●En tu medidor encontraras numeros negros o rojos estos indican metros cubicos o miles de litros.</li>
-                                <li>●En el observaras algo asi: "000123" entonces deberas capturarlo asi: "123000", ya que estos se estan midiendo en metros cubicos.</li>
-                                <li>●Si es un reporte "Semanal" </li>
-                                <li>●Este lo debes hacer cada inicio de semana, el medidor no se reinicia asi que si debes restar la cantidad del reporte anterior.</li>
-                                <li>●Ejemplo: "Semana anterior. -- 001125" "Semana actual -- 001160" entonces tu consumo sera "3500"</li>
-                                <li>●Si es un reporte "Mensual"</li>
-                                <li>●Este lo debes hacer cada primero de mes, el medidor no se reinicia asi que si debes restar la cantidad del reporte anterior.</li>
-                                <li>●Ejemplo: "Mes anterior. -- 001000" "Mes actual -- 001100" entonces tu consumo sera "10000"</li>
-                            </ul>
-                    </div>
+      /* Cards */
+      .card-soft{
+        border:none;
+        border-radius:1rem;
+        box-shadow:0 12px 30px rgba(0,0,0,.08);
+      }
+      .card-head{
+        background:linear-gradient(90deg,rgba(0,123,255,.08),rgba(16,149,244,.08));
+        border-top-left-radius:1rem;
+        border-top-right-radius:1rem;
+      }
+      .btn-success{
+        background:linear-gradient(90deg,#28a745,#2cc056);
+        border:none;
+      }
+      .btn-success:hover{ filter:brightness(.95) }
 
-                </div>
+      /* Panel lateral de ayuda */
+      .help-title{
+        font-weight:600;
+        display:flex; align-items:center; gap:.5rem;
+      }
+      .help-list li{
+        margin-bottom:.4rem;
+      }
+
+      /* Errores del form */
+      ul.errorlist{
+        margin: .25rem 0 0 0;
+        padding-left: 1rem;
+        color: #dc3545;
+        font-size: .875rem;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!--Navbar-->
+    <nav class="navbar navbar-expand-lg shadow-sm">
+      <div class="container">
+        <a class="navbar-brand" href="/">
+          <i class="bi bi-droplet-half"></i> AquaStats
+        </a>
+
+        <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <div class="navbar-nav ms-auto">
+            {% if user.is_authenticated %}
+              <a class="nav-link" href="/salir"><i class="bi bi-box-arrow-right"></i> Salir</a>
+            {% else %}
+              <a class="nav-link" href="/sesion"><i class="bi bi-box-arrow-in-right"></i> Iniciar sesión</a>
+              <a class="nav-link" href="/registro"><i class="bi bi-person-plus"></i> Registrarse</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </nav>
+    <!--Fin Navbar-->
+
+    <main class="container py-4">
+      <div class="row g-4 justify-content-center">
+        <!--formulario-->
+        <div class="col-12 col-lg-6">
+          <div class="card card-soft">
+            <div class="card-head p-4 text-center">
+              <h1 class="h4 mb-0">
+                <i class="bi bi-journal-plus pe-1"></i>
+                Reporte de Consumo de Agua
+              </h1>
             </div>
 
+            <div class="card-body p-4">
+              <form method="POST" class="mt-2">
+                {% csrf_token %}<!--Proteccion al formulario-->
 
+                <!--Input de  Cantidad-->
+                <div class="mb-3">
+                  {{ form.cantidad.label_tag }}
+                  {{ form.cantidad }}
+                  {% if form.cantidad.errors %}<ul class="errorlist">{{ form.cantidad.errors }}</ul>{% endif %}
+                </div>
 
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
-        
-    </body>
+                <!--Input de  Tipo de reporte -->
+                <div class="mb-3">
+                  {{ form.tipo_reporte.label_tag }}
+                  {{ form.tipo_reporte }}
+                  {% if form.tipo_reporte.errors %}<ul class="errorlist">{{ form.tipo_reporte.errors }}</ul>{% endif %}
+                </div>
+
+                <!--Input de Fecha-->
+                <div class="mb-3">
+                  {{ form.fecha.label_tag }}
+                  {{ form.fecha }}
+                  {% if form.fecha.errors %}<ul class="errorlist">{{ form.fecha.errors }}</ul>{% endif %}
+                </div>
+
+                <!--Input de  Domicilio-->
+                <div class="mb-3">
+                  {{ form.id_domicilio.label_tag }}
+                  {{ form.id_domicilio }}
+                  {% if form.id_domicilio.errors %}<ul class="errorlist">{{ form.id_domicilio.errors }}</ul>{% endif %}
+                </div>
+
+                {% if error %}<!--Si existe un error-->
+                  <div class="alert alert-danger">{{ error }}</div>
+                {% endif %}
+
+                <div class="d-grid gap-2 mt-3"><!--Botones de accion-->
+                  <button class="btn btn-success">
+                    <i class="bi bi-check2-circle me-1"></i> Enviar
+                  </button>
+                  <a href="/perfil" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Regresar
+                  </a>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!--Imagen + Instrucciones-->
+        <div class="col-12 col-lg-5">
+          <div class="card card-soft h-100">
+            <div class="card-head p-4">
+              <div class="help-title">
+                <i class="bi bi-lightbulb"></i> ¿Cómo hacer la medición?
+              </div>
+            </div>
+            <div class="card-body p-4">
+              <div class="text-center mb-3">
+                <img
+                  src="{% static 'img/medidor.png' %}"
+                  alt="Medidor de Agua"
+                  class="img-fluid"
+                  style="max-width: 280px; border-radius: 10px;"
+                />
+              </div>
+
+              <ul class="help-list"><!--Explicacion-->
+                <li>Identifica tu medidor.</li>
+                <li>Los números en negro o rojo indican metros cúbicos o miles de litros.</li>
+                <li>Si ves <code>000123</code> captura <code>123000</code> (se mide en m³).</li>
+                <li><strong>Reporte Semanal:</strong> regístralo al inicio de semana y resta el valor del reporte anterior.</li>
+                <li>Ejemplo semanal: Anterior <code>001125</code> / Actual <code>001160</code> → Consumo <code>3500</code>.</li>
+                <li><strong>Reporte Mensual:</strong> regístralo el primer día del mes y resta el valor del mes anterior.</li>
+                <li>Ejemplo mensual: Anterior <code>001000</code> / Actual <code>001100</code> → Consumo <code>10000</code>.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Bootstrap bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!--scripts para estilos-->
+    <script>
+      (function () {
+        const form = document.querySelector('form');
+        if (!form) return;
+
+        form.querySelectorAll('input:not([type=checkbox]):not([type=radio]):not([type=file])')
+          .forEach(el => el.classList.add('form-control'));
+        form.querySelectorAll('select').forEach(el => el.classList.add('form-select'));
+        form.querySelectorAll('textarea').forEach(el => el.classList.add('form-control'));
+        form.querySelectorAll('input[type=file]').forEach(el => el.classList.add('form-control'));
+
+        // Mejora labels
+        form.querySelectorAll('label').forEach(l => l.classList.add('form-label'));
+      })();
+    </script>
+  </body>
 </html>

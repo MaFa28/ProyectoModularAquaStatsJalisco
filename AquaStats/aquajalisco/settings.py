@@ -125,6 +125,8 @@ STATIC_DIRS = [#Lugar donde obtiene las iamgenes
     os.path.join(BASE_DIR, "static"),
 ]
 
+LOGIN_URL = '/sesion/' #Instruccion si el usuario no esta logeado lo redirige
+
 MEDIA_URL = '/media/' #Lineas para el almacenamiento de las imagenes
 MEDIA_ROOT = BASE_DIR / 'media'
 

@@ -1,226 +1,272 @@
-<!DOCTYPE html> <!--Plantilla para todas las paginas-->
+<!DOCTYPE html>
 <html lang="es">
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>AquaStatsJalisco</title>
-        <!--Bootstrap-->
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-        <!--Iconos-->
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AquaStatsJalisco</title>
 
-        <style>
-            body {
-                background-color: #f8f9fa;
-            }
-            .navbar {
-                background: linear-gradient(90deg, #007BFF, #1095f4);
-            }
-            .navbar-brand {
-                color: #fff !important;
-                font-weight: bold;
-                font-size: 1.4rem;
-            }
-            .nav-link {
-                color: #f8f9fa !important;
-                transition: 0.3s;
-            }
-            .nav-link:hover {
-                color: #ffdd57 !important;
-            }
-            .carousel-item img {
-                height: 500px;
-                object-fit: cover;
-                border-radius: 10px;
-            }
-            .carousel-caption {
-                background: rgba(0, 0, 0, 0.6);
-                border-radius: 10px;
-            }
-            footer {
-                margin-top: 50px;
-                background: #007bff;
-                color: white;
-                text-align: center;
-                padding: 10px 0;
-            }
-        </style>
-    </head>
-    
-    <body>
-            <!--Navbar-->
-            <nav class="navbar navbar-expand-lg shadow-sm">
-                <div class="container">
-                    <a class="navbar-brand" href="/">
-                        <i class="bi bi-droplet-half"></i> AquaStats
-                    </a>
+    <!-- Bootstrap y Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
 
-                    <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                        <span class="navbar-toggler-icon"></span>
-                    </button>
+    <style>
+      :root{
+        --brand-start:#007BFF;
+        --brand-end:#1095f4;
+      }
+      body{ background:#f8f9fa; }
 
-                    <div class="collapse navbar-collapse" id="navbarNav">
-                        <div class="navbar-nav ms-auto">
-                            {% if user.is_authenticated %}
-                                <a class="nav-link" href="/salir"><i class="bi bi-box-arrow-right"></i> Salir</a>
-                            {% else %}
-                                <a class="nav-link" href="/sesion"><i class="bi bi-box-arrow-in-right"></i> Iniciar sesión</a>
-                                <a class="nav-link" href="/registro"><i class="bi bi-person-plus"></i> Registrarse</a>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </nav>
-            <!--Fin del Navbar-->
-           
-            <div class="container mt-4"><!--Contiene todos los metodos necesarios de la tabla-->
-                <h2 class="mb-3">Reportes de todos los usuarios</h2>
+      /* NAVBAR (se respeta la lógica) */
+      .navbar{ background:linear-gradient(90deg,var(--brand-start),var(--brand-end)); }
+      .navbar-brand{ color:#fff!important; font-weight:700; font-size:1.4rem; }
+      .nav-link{ color:#f8f9fa!important; transition:.2s; }
+      .nav-link:hover{ color:#ffdd57!important; }
 
-                <!--Filtros-->
-                <form method="GET" class="row mb-4 g-2 align-items-end"><!--Contiene los filtros-->
-                    <div class="col-md-3">
-                        <label class="form-label">Tipo de reporte</label><!--Filtra los reportes por tipo-->
-                        <select name="tipo_reporte" class="form-select">
-                            <option value="">Todos</option>
-                            <option value="SEM" {% if request.GET.tipo_reporte == 'SEM' %}selected{% endif %}>Semanal</option>
-                            <option value="MES" {% if request.GET.tipo_reporte == 'MES' %}selected{% endif %}>Mensual</option>
-                        </select>
-                    </div>
+      /* Tarjetas y contenedores */
+      .card-soft{
+        border:none;
+        border-radius:1rem;
+        box-shadow:0 10px 28px rgba(0,0,0,.08);
+      }
+      .card-head{
+        background:linear-gradient(90deg,rgba(0,123,255,.08),rgba(16,149,244,.08));
+        border-top-left-radius:1rem;
+        border-top-right-radius:1rem;
+      }
+      .filters .form-label{ font-weight:600; }
 
-                    <div class="col-md-3">
-                        <label class="form-label">Región</label><!--Filtra la informacion por su region-->
-                        <select name="region" class="form-select">
-                            <option value="">Todas</option>
-                            <option value="RN" {% if request.GET.region == 'RN' %}selected{% endif %}>Norte</option>
-                            <option value="RAN" {% if request.GET.region == 'RAN' %}selected{% endif %}>Altos Norte</option>
-                            <option value="RAS" {% if request.GET.region == 'RAS' %}selected{% endif %}>Altos Sur</option>
-                            <option value="RC" {% if request.GET.region == 'RCC' %}selected{% endif %}>Cienega</option>
-                            <option value="RSE" {% if request.GET.region == 'RV' %}selected{% endif %}>Sureste</option>
-                            <option value="RS" {% if request.GET.region == 'RV' %}selected{% endif %}>Sur</option>
-                            <option value="RSA" {% if request.GET.region == 'RV' %}selected{% endif %}>Sierra de Amula</option>
-                            <option value="RCS" {% if request.GET.region == 'RV' %}selected{% endif %}>Costa Sur</option>
-                            <option value="RCN" {% if request.GET.region == 'RV' %}selected{% endif %}>Costa Norte</option>
-                            <option value="RSO" {% if request.GET.region == 'RV' %}selected{% endif %}>Sierra Occidental</option>
-                            <option value="RV" {% if request.GET.region == 'RV' %}selected{% endif %}>Valles</option>
-                            <option value="RCC" {% if request.GET.region == 'RV' %}selected{% endif %}>Centro</option>
-                        </select>
-                    </div>
+      /* Tabla */
+      .table thead th{ white-space:nowrap; }
+      .badge-region{ font-weight:600; letter-spacing:.3px; }
 
-                    <div class="col-md-3">
-                        <label class="form-label">Usuario</label><!--Filtra la informacion por usuarios-->
-                        <input type="text" name="usuario" class="form-control" value="{{ request.GET.usuario }}" placeholder="Buscar usuario...">
-                    </div>
+      /* Paginación */
+      .pagination .page-link{ border-radius:.5rem; }
 
-                    <div class="col-md-3"><!--Aplica los filtros y los limpia-->
-                        <button class="btn btn-primary w-100 mb-1">Filtrar</button>
-                        <a href="{% url 'reportes_todos' %}" class="btn btn-secondary w-100">Limpiar</a>
-                    </div>
-                </form>
+      /* Pie de referencia de regiones */
+      .ref-list li{ margin-bottom:.35rem; }
+    </style>
+  </head>
 
-                <!--Botones para exportar-->
-                <div class="mb-3 d-flex gap-2">
-                    <!-- Exportarsolo una pagina  -->
-                    <a href="?exportar_excel=1&exportar_todo=0{% if request.GET.tipo_reporte %}&tipo_reporte={{ request.GET.tipo_reporte }}{% endif %}{% if request.GET.region %}&region={{ request.GET.region }}{% endif %}{% if request.GET.usuario %}&usuario={{ request.GET.usuario }}{% endif %}{% if request.GET.page %}&page={{ request.GET.page }}{% endif %}" class="btn btn-success">
-                        Exportar esta página (Excel)
-                    </a><!--Exponer a excel-->
+  <body>
+    <!-- NAVBAR (intacto) -->
+    <nav class="navbar navbar-expand-lg shadow-sm">
+      <div class="container">
+        <a class="navbar-brand" href="/">
+          <i class="bi bi-droplet-half"></i> AquaStats
+        </a>
 
-                    <!-- Exportar todo -->
-                    <a href="?exportar_excel=1&exportar_todo=1{% if request.GET.tipo_reporte %}&tipo_reporte={{ request.GET.tipo_reporte }}{% endif %}{% if request.GET.region %}&region={{ request.GET.region }}{% endif %}{% if request.GET.usuario %}&usuario={{ request.GET.usuario }}{% endif %}" class="btn btn-outline-success">
-                        Exportar todo (Excel)
-                    </a>
-                    
-                    <a href="/perfil" class="btn btn-outline-warning">Regresar</a><!--Boton que regresa a la pagina de reportes-->
-                </div>
+        <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+          <span class="navbar-toggler-icon"></span>
+        </button>
 
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <div class="navbar-nav ms-auto">
+            {% if user.is_authenticated %}
+              <a class="nav-link" href="/salir"><i class="bi bi-box-arrow-right"></i> Salir</a>
+            {% else %}
+              <a class="nav-link" href="/sesion"><i class="bi bi-box-arrow-in-right"></i> Iniciar sesión</a>
+              <a class="nav-link" href="/registro"><i class="bi bi-person-plus"></i> Registrarse</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </nav>
+    <!-- Fin Navbar -->
 
-                <!--Tabla-->
-                <table class="table table-bordered table-striped text-center">
-                    <thead class="table-dark"><!--Columnas-->
-                        <tr>
-                            <th>Usuario</th>
-                            <th>Consumo (m3)</th>
-                            <th>Región</th>
-                            <th>Tipo de Reporte</th>
-                        </tr>
-                    </thead>
-                    <tbody><!--Filas-->
-                        {% for r in reportes %}
-                            <tr>
-                                <td>{{ r.id_usuario.username }}</td>
-                                <td>{{ r.cantidad }}</td>
-                                <td>{{ r.id_domicilio.region }}</td>
-                                <td>{{ r.get_tipo_reporte_display }}</td>
-                            </tr>
-                        {% empty %}<!--Si no se han creado reportes-->
-                            <tr>
-                                <td colspan="4" class="text-center">No se encontraron reportes</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+    <div class="container mt-4">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <h2 class="mb-0">Reportes de todos los usuarios</h2>
+        <div class="small text-muted">
+          <!-- Muestra un mini-resumen sin alterar lógica -->
+          {% if page_obj %}
+            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+          {% endif %}
+        </div>
+      </div>
 
-                <!--Paginacion-->
-                <nav aria-label="Page navigation"><!--Se agregan diferentes validaciones para evitar que los filtros se eliminen-->
-                    <ul class="pagination justify-content-center"><!--Ademas de poder ver paginas de reportes sin cambiar nada-->
-                        {% if page_obj.has_previous %}
-                            <li class="page-item">
-                                <a class="page-link" href="?page=1{% if request.GET.tipo_reporte %}&tipo_reporte={{ request.GET.tipo_reporte }}{% endif %}{% if request.GET.region %}&region={{ request.GET.region }}{% endif %}{% if request.GET.usuario %}&usuario={{ request.GET.usuario }}{% endif %}">⏮️ Primero</a>
-                            </li>
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.tipo_reporte %}&tipo_reporte={{ request.GET.tipo_reporte }}{% endif %}{% if request.GET.region %}&region={{ request.GET.region }}{% endif %}{% if request.GET.usuario %}&usuario={{ request.GET.usuario }}{% endif %}">◀️ Anterior</a>
-                            </li>
-                        {% endif %}
+      <!-- Filtros -->
+      <div class="card card-soft mt-3">
+        <div class="card-head p-3">
+          <div class="fw-semibold"><i class="bi bi-funnel"></i> Filtros</div>
+        </div>
+        <div class="card-body">
+          <form method="GET" class="row g-3 align-items-end filters">
+            <div class="col-md-3">
+              <label class="form-label">Tipo de reporte</label>
+              <select name="tipo_reporte" class="form-select">
+                <option value="">Todos</option>
+                <option value="SEM" {% if request.GET.tipo_reporte == 'SEM' %}selected{% endif %}>Semanal</option>
+                <option value="MES" {% if request.GET.tipo_reporte == 'MES' %}selected{% endif %}>Mensual</option>
+              </select>
+            </div>
 
-                        <li class="page-item disabled">
-                            <span class="page-link">
-                                Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
-                            </span>
-                        </li>
+            <div class="col-md-3">
+              <label class="form-label">Región</label>
+              <select name="region" class="form-select">
+                <option value="">Todas</option>
+                <!-- Se muestran los mismos códigos que tu backend espera -->
+                <option value="RN"  {% if request.GET.region == 'RN' %}selected{% endif %}>Norte</option>
+                <option value="RAN" {% if request.GET.region == 'RAN' %}selected{% endif %}>Altos Norte</option>
+                <option value="RAS" {% if request.GET.region == 'RAS' %}selected{% endif %}>Altos Sur</option>
+                <option value="RC"  {% if request.GET.region == 'RC' %}selected{% endif %}>Ciénaga</option>
+                <option value="RSE" {% if request.GET.region == 'RSE' %}selected{% endif %}>Sureste</option>
+                <option value="RS"  {% if request.GET.region == 'RS' %}selected{% endif %}>Sur</option>
+                <option value="RSA" {% if request.GET.region == 'RSA' %}selected{% endif %}>Sierra de Amula</option>
+                <option value="RCS" {% if request.GET.region == 'RCS' %}selected{% endif %}>Costa Sur</option>
+                <option value="RCN" {% if request.GET.region == 'RCN' %}selected{% endif %}>Costa Norte</option>
+                <option value="RSO" {% if request.GET.region == 'RSO' %}selected{% endif %}>Sierra Occidental</option>
+                <option value="RV"  {% if request.GET.region == 'RV' %}selected{% endif %}>Valles</option>
+                <option value="RCC" {% if request.GET.region == 'RCC' %}selected{% endif %}>Centro</option>
+              </select>
+            </div>
 
-                        {% if page_obj.has_next %}
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.tipo_reporte %}&tipo_reporte={{ request.GET.tipo_reporte }}{% endif %}{% if request.GET.region %}&region={{ request.GET.region }}{% endif %}{% if request.GET.usuario %}&usuario={{ request.GET.usuario }}{% endif %}">Siguiente ▶️</a>
-                            </li>
-                            <li class="page-item">
-                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.tipo_reporte %}&tipo_reporte={{ request.GET.tipo_reporte }}{% endif %}{% if request.GET.region %}&region={{ request.GET.region }}{% endif %}{% if request.GET.usuario %}&usuario={{ request.GET.usuario }}{% endif %}">Último ⏭️</a>
-                            </li>
-                        {% endif %}
-                    </ul>
-                </nav>
+            <div class="col-md-3">
+              <label class="form-label">Usuario</label>
+              <input type="text" name="usuario" class="form-control" value="{{ request.GET.usuario }}" placeholder="Buscar usuario..." />
+            </div>
 
-                <hr class="mt-4 mb-3"><!--Muestra una lsita del los tipos de regiones-->
-                <div class="container mt-4">
-                    <div class="row">
-                        <!--Izquierda-->
-                        <div class="col-md-6 text-start">
-                            <ul class="list-unstyled ms-4">
-                                <li>"RN":  Region Norte</li>
-                                <li>"RAN": Region Altos Norte</li>
-                                <li>"RAS": Region Altos Sur</li>
-                                <li>"RC":  Region Cienega</li>
-                                <li>"RSE": Region Sureste</li>
-                                <li>"RS":  Region Sur</li>
-                            </ul>
-                        </div>
+            <div class="col-md-3 d-grid d-md-block">
+              <button class="btn btn-primary w-100 mb-2">
+                <i class="bi bi-search"></i> Filtrar
+              </button>
+              <a href="{% url 'reportes_todos' %}" class="btn btn-outline-secondary w-100">
+                <i class="bi bi-eraser"></i> Limpiar
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
 
-                        <!--Derecha-->
-                        <div class="col-md-6 text-end">
-                            <ul class="list-unstyled d-inline-block text-start ms-4">
-                                <li>"RCS": Region Costa Sur</li>
-                                <li>"RSA": Region Sierra de Amula</li>
-                                <li>"RCN": Region Costa Norte</li>
-                                <li>"RSO": Region Sierra Occidental</li>
-                                <li>"RV":  Region Valles</li>
-                                <li>"RCC": Region Centro</li>
-                            </ul>
-                        </div>
-                    </div>
+      <!-- Acciones / Exportar -->
+      <div class="d-flex flex-wrap gap-2 mt-3">
+        <!-- Exportar esta página (Excel) -->
+        <a
+          class="btn btn-success"
+          href="?exportar_excel=1&exportar_todo=0{% if request.GET.tipo_reporte %}&tipo_reporte={{ request.GET.tipo_reporte }}{% endif %}{% if request.GET.region %}&region={{ request.GET.region }}{% endif %}{% if request.GET.usuario %}&usuario={{ request.GET.usuario }}{% endif %}{% if request.GET.page %}&page={{ request.GET.page }}{% endif %}"
+        >
+          <i class="bi bi-file-earmark-excel"></i> Exportar esta página (Excel)
+        </a>
 
-                </div>
+        <!-- Exportar todo (Excel) -->
+        <a
+          class="btn btn-outline-success"
+          href="?exportar_excel=1&exportar_todo=1{% if request.GET.tipo_reporte %}&tipo_reporte={{ request.GET.tipo_reporte }}{% endif %}{% if request.GET.region %}&region={{ request.GET.region }}{% endif %}{% if request.GET.usuario %}&usuario={{ request.GET.usuario }}{% endif %}"
+        >
+          <i class="bi bi-download"></i> Exportar todo (Excel)
+        </a>
 
+        <a href="/perfil" class="btn btn-warning">
+          <i class="bi bi-arrow-left-circle"></i> Regresar
+        </a>
+      </div>
 
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
-        
-    </body>
+      <!-- Tabla -->
+      <div class="table-responsive mt-3">
+        <table class="table table-bordered table-striped table-hover align-middle text-center">
+          <thead class="table-dark">
+            <tr>
+              <th>Usuario</th>
+              <th>Consumo (m³)</th>
+              <th>Región</th>
+              <th>Tipo de Reporte</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in reportes %}
+              <tr>
+                <td class="text-nowrap">{{ r.id_usuario.username }}</td>
+                <td>{{ r.cantidad }}</td>
+                <td>
+                  <span class="badge text-bg-light badge-region">{{ r.id_domicilio.region }}</span>
+                </td>
+                <td>{{ r.get_tipo_reporte_display }}</td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="4" class="text-center text-muted py-4">
+                  <i class="bi bi-inbox me-1"></i> No se encontraron reportes
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Paginación -->
+      {% if page_obj %}
+        <nav aria-label="Page navigation">
+          <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+              <li class="page-item">
+                <a class="page-link"
+                   href="?page=1{% if request.GET.tipo_reporte %}&tipo_reporte={{ request.GET.tipo_reporte }}{% endif %}{% if request.GET.region %}&region={{ request.GET.region }}{% endif %}{% if request.GET.usuario %}&usuario={{ request.GET.usuario }}{% endif %}">
+                  ⏮️ Primero
+                </a>
+              </li>
+              <li class="page-item">
+                <a class="page-link"
+                   href="?page={{ page_obj.previous_page_number }}{% if request.GET.tipo_reporte %}&tipo_reporte={{ request.GET.tipo_reporte }}{% endif %}{% if request.GET.region %}&region={{ request.GET.region }}{% endif %}{% if request.GET.usuario %}&usuario={{ request.GET.usuario }}{% endif %}">
+                  ◀️ Anterior
+                </a>
+              </li>
+            {% endif %}
+
+            <li class="page-item disabled">
+              <span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+            </li>
+
+            {% if page_obj.has_next %}
+              <li class="page-item">
+                <a class="page-link"
+                   href="?page={{ page_obj.next_page_number }}{% if request.GET.tipo_reporte %}&tipo_reporte={{ request.GET.tipo_reporte }}{% endif %}{% if request.GET.region %}&region={{ request.GET.region }}{% endif %}{% if request.GET.usuario %}&usuario={{ request.GET.usuario }}{% endif %}">
+                  Siguiente ▶️
+                </a>
+              </li>
+              <li class="page-item">
+                <a class="page-link"
+                   href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.tipo_reporte %}&tipo_reporte={{ request.GET.tipo_reporte }}{% endif %}{% if request.GET.region %}&region={{ request.GET.region }}{% endif %}{% if request.GET.usuario %}&usuario={{ request.GET.usuario }}{% endif %}">
+                  Último ⏭️
+                </a>
+              </li>
+            {% endif %}
+          </ul>
+        </nav>
+      {% endif %}
+
+      <!-- Referencia de regiones -->
+      <div class="card card-soft mt-4">
+        <div class="card-head p-3">
+          <div class="fw-semibold"><i class="bi bi-compass"></i> Códigos de región</div>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <ul class="list-unstyled ref-list ms-2">
+                <li><code>RN</code>: Región Norte</li>
+                <li><code>RAN</code>: Región Altos Norte</li>
+                <li><code>RAS</code>: Región Altos Sur</li>
+                <li><code>RC</code>: Región Ciénaga</li>
+                <li><code>RSE</code>: Región Sureste</li>
+                <li><code>RS</code>: Región Sur</li>
+              </ul>
+            </div>
+            <div class="col-md-6">
+              <ul class="list-unstyled ref-list ms-2">
+                <li><code>RCS</code>: Región Costa Sur</li>
+                <li><code>RSA</code>: Región Sierra de Amula</li>
+                <li><code>RCN</code>: Región Costa Norte</li>
+                <li><code>RSO</code>: Región Sierra Occidental</li>
+                <li><code>RV</code>: Región Valles</li>
+                <li><code>RCC</code>: Región Centro</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /.container -->
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
 </html>

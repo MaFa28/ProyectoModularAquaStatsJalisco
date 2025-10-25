@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User#importando la tabla usuario para la relacion
 from django.core.validators import MinValueValidator, MaxValueValidator
 from datetime import datetime
+from django.utils import timezone
 
 # Create your models here.
 class domicilior(models.Model): #Tabla domicilio
@@ -172,14 +173,29 @@ class consumoagua(models.Model):#Tabla de consumos
     def __str__(self):
         return  f"{self.cantidad} m3 por {self.id_usuario.username}"#concatenar en el panel de admistrador
     
-
-class recomendaciones(models.Model): #Tabla recomendaciones
+class recomendaciones(models.Model):#Tabla de recomendaciones
+    ALGORITMOS = (
+        ('regresion', 'Regresión'),
+        ('bayes', 'Naive Bayes'),
+        ('kmeans', 'K-Means'),
+        ('general', 'General'), 
+    )
     texto = models.CharField(max_length=500)
-    fecha = models.DateField()
+    fecha = models.DateField(default=timezone.now)
     id_usuario = models.ForeignKey(User, on_delete=models.CASCADE)
-    
+    algoritmo = models.CharField(max_length=20, choices=ALGORITMOS, default='general')
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['id_usuario', 'algoritmo', 'fecha'],
+                name='uniq_rec_usuario_algoritmo_fecha'
+            )
+        ]
+
     def __str__(self):
-        return self.texto + ' para ' + self.id_usuario.username #concatenar en el panel de admistrador
+        return f'{self.id_usuario.username} - {self.algoritmo} - {self.fecha}'
+
 
 class RegresionMetricas(models.Model):#Tabla para guardar los datos del algorimto de regresion
     usuario = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)

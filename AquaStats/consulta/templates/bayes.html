@@ -1,149 +1,227 @@
-<!DOCTYPE html> <!--Plantilla para todas las paginas-->
+<!DOCTYPE html>
 <html lang="es">
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>AquaStatsJalisco</title>
-       <!--Bootstrap-->
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-        <!--Iconos-->
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>AquaStatsJalisco</title>
+    <!--Bootstrap y Icons-->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
 
-        <style>
-            body {
-                background-color: #f8f9fa;
-            }
-            .navbar {
-                background: linear-gradient(90deg, #007BFF, #1095f4);
-            }
-            .navbar-brand {
-                color: #fff !important;
-                font-weight: bold;
-                font-size: 1.4rem;
-            }
-            .nav-link {
-                color: #f8f9fa !important;
-                transition: 0.3s;
-            }
-            .nav-link:hover {
-                color: #ffdd57 !important;
-            }
-            .carousel-item img {
-                height: 500px;
-                object-fit: cover;
-                border-radius: 10px;
-            }
-            .carousel-caption {
-                background: rgba(0, 0, 0, 0.6);
-                border-radius: 10px;
-            }
-            footer {
-                margin-top: 50px;
-                background: #007bff;
-                color: white;
-                text-align: center;
-                padding: 10px 0;
-            }
-        </style>
-    </head>
-    
-    <body>
-            <!--Navbar-->
-            <nav class="navbar navbar-expand-lg shadow-sm">
-                <div class="container">
-                    <a class="navbar-brand" href="/">
-                        <i class="bi bi-droplet-half"></i> AquaStats
-                    </a>
+    <style>
+      :root{
+        --brand-start:#007BFF;
+        --brand-end:#1095f4;
+      }
+      body{
+        background:#f8f9fa;
+        background-image:
+          radial-gradient(900px 360px at -10% -10%, rgba(16,149,244,.08), transparent 60%),
+          radial-gradient(700px 300px at 110% 110%, rgba(0,123,255,.08), transparent 60%);
+      }
 
-                    <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                        <span class="navbar-toggler-icon"></span>
-                    </button>
+      /* NAVBAR (no se cambia la estructura/lógica) */
+      .navbar{ background:linear-gradient(90deg,var(--brand-start),var(--brand-end)); }
+      .navbar-brand{ color:#fff!important; font-weight:700; font-size:1.4rem; }
+      .nav-link{ color:#f8f9fa!important; transition:.2s; }
+      .nav-link:hover{ color:#ffdd57!important; }
 
-                    <div class="collapse navbar-collapse" id="navbarNav">
-                        <div class="navbar-nav ms-auto">
-                            {% if user.is_authenticated %}
-                                <a class="nav-link" href="/salir"><i class="bi bi-box-arrow-right"></i> Salir</a>
+      /* Cards suaves */
+      .card-soft{
+        border:none;
+        border-radius:1rem;
+        box-shadow:0 12px 30px rgba(0,0,0,.08);
+      }
+      .card-head{
+        background:linear-gradient(90deg,rgba(0,123,255,.08),rgba(16,149,244,.08));
+        border-top-left-radius:1rem;
+        border-top-right-radius:1rem;
+      }
+
+      /* Tablas */
+      .table-wrap{
+        border-radius:.75rem;
+        overflow:auto;
+        box-shadow:0 6px 18px rgba(0,0,0,.06);
+        background:#fff;
+      }
+      thead th{
+        position:sticky;
+        top:0;
+        z-index:1;
+      }
+
+      /* Badges por nivel */
+      .badge-nivel{ font-weight:600; letter-spacing:.2px; }
+    </style>
+  </head>
+
+  <body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg shadow-sm">
+      <div class="container">
+        <a class="navbar-brand" href="/">
+          <i class="bi bi-droplet-half"></i> AquaStats
+        </a>
+
+        <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <div class="navbar-nav ms-auto">
+            {% if user.is_authenticated %}
+              <a class="nav-link" href="/salir"><i class="bi bi-box-arrow-right"></i> Salir</a>
+            {% else %}
+              <a class="nav-link" href="/sesion"><i class="bi bi-box-arrow-in-right"></i> Iniciar sesión</a>
+              <a class="nav-link" href="/registro"><i class="bi bi-person-plus"></i> Registrarse</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </nav>
+    <!-- Fin Navbar -->
+
+    <div class="container mt-4">
+      <div class="card card-soft">
+        <div class="card-head p-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <h3 class="mb-0">Clasificación Bayesiana del Consumo</h3>
+          {% if ultima_fecha %}
+            <span class="text-muted small">
+              <i class="bi bi-clock-history me-1"></i> Último entrenamiento: <strong>{{ ultima_fecha|date:"d M Y H:i" }}</strong>
+            </span>
+          {% endif %}
+        </div>
+
+        <div class="card-body">
+          {% if empty %}
+            <div class="alert alert-warning text-center mb-0">
+              <i class="bi bi-exclamation-triangle me-1"></i> No hay datos suficientes para el análisis.
+            </div>
+          {% else %}
+
+            <!-- DISTRIBUCIÓN + PREDICCIONES -->
+            <div class="row g-4">
+              <!-- Distribución -->
+              <div class="col-12 col-lg-6">
+                <div class="table-wrap">
+                  <table class="table table-bordered table-striped text-center align-middle mb-0">
+                    <thead class="table-dark">
+                      <tr>
+                        <th colspan="2" class="text-start">
+                          <i class="bi bi-pie-chart-fill me-1"></i> Distribución de niveles de consumo
+                        </th>
+                      </tr>
+                      <tr>
+                        <th>Nivel</th>
+                        <th>Cantidad de registros</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for row in conteo %}
+                        <tr>
+                          <td>
+                            {% if row.Nivel == 'Alto' %}
+                              <span class="badge bg-danger badge-nivel">Alto</span>
+                            {% elif row.Nivel == 'Medio' %}
+                              <span class="badge bg-warning text-dark badge-nivel">Medio</span>
+                            {% elif row.Nivel == 'Bajo' %}
+                              <span class="badge bg-success badge-nivel">Bajo</span>
                             {% else %}
-                                <a class="nav-link" href="/sesion"><i class="bi bi-box-arrow-in-right"></i> Iniciar sesión</a>
-                                <a class="nav-link" href="/registro"><i class="bi bi-person-plus"></i> Registrarse</a>
+                              <span class="badge bg-secondary badge-nivel">{{ row.Nivel }}</span>
                             {% endif %}
-                        </div>
-                    </div>
+                          </td>
+                          <td class="fw-semibold">{{ row.Cantidad }}</td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
                 </div>
-            </nav>
-            <!--Fin del Navbar-->
+              </div>
 
-            <div class="container mt-4"><!--Clasificacion Bayesiana-->
-                <h3 class="text-center mb-4">Clasificacion Bayesiana del Consumo</h3>
-
-                {% if empty %}
-                    <div class="alert alert-warning text-center">No hay datos suficientes para el analisis.</div>
-                {% else %}
-                    <h5 class="fw-bold">Distribucion de niveles de consumo:</h5>
-                    <table class="table table-bordered table-striped text-center"><!--Tabla de bayes-->
-                        <thead class="table-dark"><!--Columnas de la tabla-->
-                            <tr>
-                                <th>Nivel</th>
-                                <th>Cantidad de registros</th>
-                            </tr>
-                        </thead>
-                        <tbody><!--Filas de la tabla-->
-                            {% for row in conteo %}
-                                <tr>
-                                    <td>{{ row.Nivel }}</td>
-                                    <td>{{ row.Cantidad }}</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-
-                    <h5 class="fw-bold mt-4">Predicciones de ejemplo:</h5>
-                    <table class="table table-hover text-center"><!--Tabla de ejemplo-->
-                        <thead class="table-secondary"><!--Columnas de la tabla-->
-                            <tr>
-                                <th>Consumo (m³)</th>
-                                <th>Clasificación</th>
-                            </tr>
-                        </thead>
-                        <tbody><!--Filas de la tabla-->
-                            {% for valor, categoria in predicciones %}
-                                <tr>
-                                    <td>{{ valor }}</td>
-                                    <td>{{ categoria }}</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-
-                    <div class="alert alert-info mt-4 text-center"><!--recomendacion-->
-                        <strong>Recomendacion:</strong> {{ recomendacion }}
-                    </div>
-
-                    <div class="alert alert-info mt-4"><!--Explica como funciona la clasificacion-->
-                        <strong>Explicacion:</strong><br>
-                        {{ explicacion }}
-                    </div>
-                {% endif %}
-
-                    <div class="text-center mt-4"><!--Botones de accion-->
-                            <a href="{% url 'dashboard_global' %}" class="btn btn-danger">Volver</a>
-                            <a href="{% url 'historial_bayes' %}" class="btn btn-success">Historial</a>
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <form action="{% url 'reentrenar_bayes' %}" method="POST">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-primary">Reentrenar modelo</button>
-                                </form>
-                            </div>
-
-                            {% if ultima_fecha %}
-                                <p class="text-muted"> Ultimo entrenamiento: {{ ultima_fecha|date:"d M Y H:i" }}</p>
+              <!-- Predicciones -->
+              <div class="col-12 col-lg-6">
+                <div class="table-wrap">
+                  <table class="table table-hover text-center align-middle mb-0">
+                    <thead class="table-secondary">
+                      <tr>
+                        <th colspan="2" class="text-start">
+                          <i class="bi bi-magic me-1"></i> Predicciones de ejemplo
+                        </th>
+                      </tr>
+                      <tr>
+                        <th>Consumo (m³)</th>
+                        <th>Clasificación</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for valor, categoria in predicciones %}
+                        <tr>
+                          <td class="fw-semibold">{{ valor }}</td>
+                          <td>
+                            {% if categoria == 'Alto' %}
+                              <span class="badge bg-danger badge-nivel">Alto</span>
+                            {% elif categoria == 'Medio' %}
+                              <span class="badge bg-warning text-dark badge-nivel">Medio</span>
+                            {% elif categoria == 'Bajo' %}
+                              <span class="badge bg-success badge-nivel">Bajo</span>
+                            {% else %}
+                              <span class="badge bg-secondary badge-nivel">{{ categoria }}</span>
                             {% endif %}
-                    </div>
+                          </td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
 
-                     
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
-        
-    </body>
+            <!-- RECOMENDACIÓN -->
+            <div class="alert alert-info mt-4">
+              <div class="d-flex align-items-start gap-2">
+                <i class="bi bi-lightbulb-fill fs-4"></i>
+                <div>
+                  <strong>Recomendación:</strong> {{ recomendacion }}
+                </div>
+              </div>
+            </div>
+
+            <!-- EXPLICACIÓN -->
+            <div class="card card-soft p-3 bg-light">
+              <h5 class="mb-2"><i class="bi bi-journal-text me-1"></i> Explicación</h5>
+              <p class="mb-0">{{ explicacion }}</p>
+            </div>
+
+            <!-- ACCIONES -->
+            <div class="row g-2 mt-4">
+              <div class="col-12 col-md-4">
+                <a href="{% url 'dashboard_global' %}" class="btn btn-outline-secondary w-100">
+                  <i class="bi bi-arrow-left-circle me-1"></i> Volver
+                </a>
+              </div>
+              <div class="col-12 col-md-4">
+                <a href="{% url 'historial_bayes' %}" class="btn btn-success w-100">
+                  <i class="bi bi-clipboard2-data me-1"></i> Historial
+                </a>
+              </div>
+              <div class="col-12 col-md-4">
+                <form action="{% url 'reentrenar_bayes' %}" method="POST" class="d-grid">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-arrow-repeat me-1"></i> Reentrenar modelo
+                  </button>
+                </form>
+              </div>
+            </div>
+
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
 </html>

@@ -1,97 +1,142 @@
-<!DOCTYPE html> <!--Plantilla para todas las paginas-->
+<!DOCTYPE html>
 <html lang="es">
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>AquaStatsJalisco</title>
-        <!--Bootstrap-->
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-        <!--Iconos-->
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AquaStatsJalisco</title>
 
-        <style>
-            body {
-                background-color: #f8f9fa;
-            }
-            .navbar {
-                background: linear-gradient(90deg, #007BFF, #1095f4);
-            }
-            .navbar-brand {
-                color: #fff !important;
-                font-weight: bold;
-                font-size: 1.4rem;
-            }
-            .nav-link {
-                color: #f8f9fa !important;
-                transition: 0.3s;
-            }
-            .nav-link:hover {
-                color: #ffdd57 !important;
-            }
-            .carousel-item img {
-                height: 500px;
-                object-fit: cover;
-                border-radius: 10px;
-            }
-            .carousel-caption {
-                background: rgba(0, 0, 0, 0.6);
-                border-radius: 10px;
-            }
-            footer {
-                margin-top: 50px;
-                background: #007bff;
-                color: white;
-                text-align: center;
-                padding: 10px 0;
-            }
-        </style>
-    </head>
-    
-    <body>
-            <nav class="navbar navbar-expand-lg shadow-sm">
-                <div class="container">
-                    <a class="navbar-brand" href="/">
-                        <i class="bi bi-droplet-half"></i> AquaStats
-                    </a>
+    <!-- Bootstrap y  Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+    <!--estilos-->
+    <style>
+      :root{
+        --brand-start:#007BFF;
+        --brand-end:#1095f4;
+      }
+      body{ background:#f8f9fa; }
 
-                    <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                        <span class="navbar-toggler-icon"></span>
-                    </button>
+      /* NAVBAR (respetado) */
+      .navbar{ background:linear-gradient(90deg,var(--brand-start),var(--brand-end)); }
+      .navbar-brand{ color:#fff!important; font-weight:700; font-size:1.4rem; }
+      .nav-link{ color:#f8f9fa!important; transition:.2s; }
+      .nav-link:hover{ color:#ffdd57!important; }
 
-                    <div class="collapse navbar-collapse" id="navbarNav">
-                        <div class="navbar-nav ms-auto">
-                            {% if user.is_authenticated %}
-                                <a class="nav-link" href="/salir"><i class="bi bi-box-arrow-right"></i> Salir</a>
-                            {% else %}
-                                <a class="nav-link" href="/sesion"><i class="bi bi-box-arrow-in-right"></i> Iniciar sesión</a>
-                                <a class="nav-link" href="/registro"><i class="bi bi-person-plus"></i> Registrarse</a>
-                            {% endif %}
-                        </div>
-                    </div>
+      /* Card de confirmación */
+      .confirm-card{
+        border:none;
+        border-radius:1rem;
+        box-shadow:0 12px 30px rgba(0,0,0,.1);
+        margin-top:3rem;
+      }
+      .confirm-head{
+        background:linear-gradient(90deg, rgba(220,53,69,.12), rgba(255,0,0,.08));
+        border-top-left-radius:1rem;
+        border-top-right-radius:1rem;
+      }
+      .list-icon{ width:1.25rem; display:inline-flex; justify-content:center; }
+      .btn-danger{ box-shadow:0 6px 14px rgba(220,53,69,.2); }
+      .btn-outline-secondary{ box-shadow:0 6px 14px rgba(108,117,125,.12); }
+    </style>
+  </head>
+
+  <body>
+    <!--Navbar-->
+    <nav class="navbar navbar-expand-lg shadow-sm">
+      <div class="container">
+        <a class="navbar-brand" href="/">
+          <i class="bi bi-droplet-half"></i> AquaStats
+        </a>
+
+        <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <div class="navbar-nav ms-auto">
+            {% if user.is_authenticated %}
+              <a class="nav-link" href="/salir"><i class="bi bi-box-arrow-right"></i> Salir</a>
+            {% else %}
+              <a class="nav-link" href="/sesion"><i class="bi bi-box-arrow-in-right"></i> Iniciar sesión</a>
+              <a class="nav-link" href="/registro"><i class="bi bi-person-plus"></i> Registrarse</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </nav>
+    <!--Fin Navbar-->
+
+    <main class="container">
+      <div class="row justify-content-center">
+        <div class="col-sm-11 col-md-9 col-lg-7">
+          <div class="card confirm-card">
+            <div class="confirm-head p-4 text-center">
+              <h1 class="h4 mb-0 text-danger">
+                <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                Confirmar eliminación
+              </h1>
+            </div>
+
+            <div class="card-body p-4 p-md-5">
+              <div class="alert alert-warning d-flex align-items-start" role="alert">
+                <i class="bi bi-info-circle-fill me-2"></i>
+                <div>
+                  Esta acción <strong>no se puede deshacer</strong>. ¿Deseas eliminar este domicilio?
                 </div>
-            </nav>
-            <!--Fin del Navbar-->
+              </div>
 
-            <main class="container"><!--Elementos de la vista para eliminar el domicilio-->
-                <div class="container mt-5">
-                    <div class="alert alert-danger text-center"><!--Muestra la informacion del domicilio a eliminar-->
-                        <h4>¿Deseas eliminar este domicilio?</h4>
-                        <p><strong>{{ domicilio.direccion }} - {{ domicilio.colonia }}</strong></p>
+              <!--Resumen del domicilio-->
+              <div class="border rounded p-3 mb-4 bg-white"><!--Muestra la imformacion a eliminar-->
+                <div class="row g-3">
+                  <div class="col-12">
+                    <div class="small text-muted">Dirección</div>
+                    <div class="fw-semibold text-truncate" title="{{ domicilio.direccion|default:'—' }}">
+                      <span class="list-icon"><i class="bi bi-geo-alt"></i></span>
+                      {{ domicilio.direccion|default:"—" }}
                     </div>
-
-                    <form method="POST"><!--Form para eliminar el domicilio-->
-                        {% csrf_token %}
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-success">Eliminar</button><!--Boton para guardar la informacion-->
-                            <a href="/domicilios" class="btn btn-danger">Cancelar</a>
-                        </div>
-                    </form>
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <div class="small text-muted">Colonia</div>
+                    <div class="fw-semibold text-truncate" title="{{ domicilio.colonia|default:'—' }}">
+                      <span class="list-icon"><i class="bi bi-building"></i></span>
+                      {{ domicilio.colonia|default:"—" }}
+                    </div>
+                  </div>
+                  <div class="col-12 col-md-3">
+                    <div class="small text-muted">Municipio</div>
+                    <div class="fw-semibold">
+                      <span class="list-icon"><i class="bi bi-geo"></i></span>
+                      {{ domicilio.municipio|default:"—" }}
+                    </div>
+                  </div>
+                  <div class="col-12 col-md-3">
+                    <div class="small text-muted">Región</div>
+                    <div class="fw-semibold">
+                      <span class="list-icon"><i class="bi bi-compass"></i></span>
+                      {{ domicilio.region|default:"—" }}
+                    </div>
+                  </div>
                 </div>
-            </main>
-      
-           
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    </body>
+              </div>
+
+              <!--Form para eliminar-->
+              <form method="POST" class="d-grid gap-2">
+                {% csrf_token %}<!--Proteger el formulario-->
+                <button type="submit" class="btn btn-danger btn-lg"><!--Botones de accion-->
+                  <i class="bi bi-trash3 me-1"></i> Eliminar definitivamente
+                </button>
+                <a href="/domicilios" class="btn btn-outline-secondary">
+                  <i class="bi bi-x-circle"></i> Cancelar
+                </a>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+    <!--scripts de los estilos-->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  </body>
 </html>

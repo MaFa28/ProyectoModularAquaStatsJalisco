@@ -11,14 +11,11 @@ from .models import recomendaciones, consumoagua, domicilior, RegresionMetricas,
 from django.core.paginator import Paginator #Agregar paginacion en la tabla
 import openpyxl#Para trabajar con archivos de excel
 import io  #Trabajar con los PDF
-from io import BytesIO
 import pandas as pd #Manejo de datos
 import numpy as np#Manejo de datos y los muestra en graficas
-import json #Utilizar instrucciones Javascript
+#import json #Utilizar instrucciones Javascript
 import plotly.express as px #Manejo de datos y muestra datos en dashboard
-import plotly.io as pio
 from datetime import datetime #para convertir la informacion para exportar
-from reportlab.pdfgen import canvas#Crear PDF
 from reportlab.lib.pagesizes import letter#Crear PDF
 from reportlab.lib import colors#Crear PDF
 from reportlab.lib.units import inch#Crear PDF
@@ -34,8 +31,10 @@ from django.db.models import Avg, Count, Max #Herramientas auxiliares de Kmeans
 from django.conf import settings #Herramientas auxiliares de Kmeans
 import os#Herramientas auxiliares de Kmeans
 from datetime import date#Herramientas auxiliares de Kmeans
-
-
+from .utils.ia_hibrida import entrenar_modelo, predecir_consumo #Trae el modelo de la ia
+from .utils.sistema_experto import sistema_experto #trae el modelo del sistema experto
+import plotly.graph_objects as go #apoyo en las graficas
+from .utils.help import guardar_recomendacion #trae el modelo de guardar recomendaciones
 
 # Create your views here.
 def home(request):  # Vista del Inicio
@@ -110,11 +109,9 @@ def sigup(request):#Vista del registro de usuarios
             "error" : 'Corrige los errores'
         })
                 
-    
 def salir(request):#Vista para cerrar sesion
     logout(request)
     return redirect('home')
-
 
 def inicio(request):#Vista inicio de sesion
     if request.method == 'GET':#Renvio del formulario
@@ -132,7 +129,7 @@ def inicio(request):#Vista inicio de sesion
             login(request, user)#Usuario existente
             return redirect('perfil')
     
-
+@login_required#Protege los endpoints si el usuario no esta logeado
 def domicilio(request):#Vista de registro de domicilio
        if request.method == 'GET':#Si la peticion en GET regresa el formulario
            return render(request,'domicilio.html',{
@@ -157,13 +154,14 @@ def domicilio(request):#Vista de registro de domicilio
                    'error' : f'Ocurrio un error'
                })
    
-
+@login_required#Protege los endpoints si el usuario no esta logeado
 def ver_domicilios(request):#Vista para ver los domicilios registrados
     domicilios = domicilior.objects.filter(id_usuario=request.user) #Filtrado de domicilios del usuario logeado
     return render(request, 'domicilios.html',{
         'domicilios' : domicilios
     })   
 
+@login_required#Protege los endpoints si el usuario no esta logeado
 def editar_domicilio(request, domicilio_id):
     domicilio = get_object_or_404(domicilior, id=domicilio_id, id_usuario=request.user) #Metodo para evitar que otros usuarios modifiquen formularios que no sean suyos
     
@@ -177,8 +175,10 @@ def editar_domicilio(request, domicilio_id):
     return render(request,'editardomi.html',{
         'form' : form
     })
-     
+   
+@login_required  #Protege los endpoints si el usuario no esta logeado
 def eliminar_domicilio(request, domicilio_id):
+    
     domicilio = get_object_or_404(domicilior, id=domicilio_id, id_usuario=request.user)#Si no se cumple la condicion regresa el form otra vez
     
     if request.method == 'POST':#Metodo POST
@@ -188,7 +188,8 @@ def eliminar_domicilio(request, domicilio_id):
     return render(request, 'eliminardomi.html', { #Regresa el mismo formulario a pantalla
         'domicilio': domicilio
         })
-   
+
+@login_required  #Protege los endpoints si el usuario no esta logeado
 def perfil(request):#Vista perfil
     
     #Filtros
@@ -215,7 +216,8 @@ def perfil(request):#Vista perfil
         'tipo' : tipo,
         'fecha' : fecha,
     })
-     
+
+@login_required   #Protege los endpoints si el usuario no esta logeado 
 def reporte(request):#Vista para los  reportes
     if request.method == 'GET': #Regresa la misma vista si se crea nuevo formulario
         return render(request,'reporte.html',{
@@ -239,7 +241,8 @@ def reporte(request):#Vista para los  reportes
                    'form' : RegistroCosumo,
                    'error' : f'Ocurrio un error'
                })
-            
+
+@login_required   #Protege los endpoints si el usuario no esta logeado        
 def editar_reporte(request, id):#Vista para editar los reportes
     reporte = get_object_or_404(consumoagua, id=id, id_usuario=request.user)#Metodo para evitar que otros usuarios modifiquen formularios que no sean suyos
     
@@ -257,7 +260,8 @@ def editar_reporte(request, id):#Vista para editar los reportes
     return render(request,'editarrepo.html',{
         'form' : form
     })
-    
+
+@login_required  #Protege los endpoints si el usuario no esta logeado
 def eliminar_reporte(request, id):#Vista para eliminar los reportes
     reporte = get_object_or_404(consumoagua, id=id, id_usuario=request.user)#Metodo para evitar que otros usuarios eliminen formularios que no sean suyos
     
@@ -269,6 +273,7 @@ def eliminar_reporte(request, id):#Vista para eliminar los reportes
         'reporte' : reporte
     })
 
+@login_required#Protege los endpoints si el usuario no esta logeado
 def exportar_excel(request):#Vista para exportar archivos a EXCEl
     #Filtros
     tipo = request.GET.get('tipo')
@@ -307,6 +312,7 @@ def exportar_excel(request):#Vista para exportar archivos a EXCEl
     wb.save(response)
     return response
 
+@login_required#Protege los endpoints si el usuario no esta logeado
 def exportar_pdf(request):#Vista para generar PDF con estilos
     tipo = request.GET.get('tipo')
     fecha = request.GET.get('fecha')
@@ -378,6 +384,7 @@ def exportar_pdf(request):#Vista para generar PDF con estilos
     
     return FileResponse(buffer, as_attachment=True, filename="reportes_consumo.pdf")
 
+@login_required#Protege los endpoints si el usuario no esta logeado
 def reportes_publicos(request):#Vista para vizualizar todos los reportes de manera global
     reportes = consumoagua.objects.select_related('id_usuario','id_domicilio')
     
@@ -435,7 +442,8 @@ def reportes_publicos(request):#Vista para vizualizar todos los reportes de mane
         'page_obj': page_obj,
         'reportes': page_obj.object_list,
     })
-    
+
+@login_required   #Protege los endpoints si el usuario no esta logeado
 def analisis_usuario(request):#Vista para ver un remusen del consumo, en forma de tabla y grafica, ademas muestra anomalias
     reportes = consumoagua.objects.filter(id_usuario=request.user).select_related('id_domicilio')#Obtiene solo los reportes de el usuario logeado
 
@@ -499,9 +507,9 @@ def analisis_usuario(request):#Vista para ver un remusen del consumo, en forma d
 
     
     return render(request, 'analisis_usuario.html', contexto)
-           
-def dashboard_global(request):#Vista para ver datos de manera global de todos los usuarios
 
+@login_required   #Protege los endpoints si el usuario no esta logeado       
+def dashboard_global(request):  # Vista para ver datos de manera global de todos los usuarios
     # --- Filtros ---
     tipo = request.GET.get('tipo')
     region = request.GET.get('region')
@@ -544,13 +552,81 @@ def dashboard_global(request):#Vista para ver datos de manera global de todos lo
     df.dropna(subset=['Cantidad'], inplace=True)
 
     # --- Gráficas principales ---
-    graf1 = px.line(df, x='Fecha', y='Cantidad', color='Usuario', title='Tendencia de Consumo por Usuario')
-    graf2 = px.bar(df.groupby(['Usuario', 'Tipo de Reporte'])['Cantidad']
-                   .mean().reset_index(),
-                   x='Usuario', y='Cantidad', color='Tipo de Reporte',
-                   title='Promedio por Usuario y Tipo de Reporte')
+    graf1 = px.line(df, x='Fecha', y='Cantidad', color='Usuario',
+                    title='Tendencia de Consumo por Usuario')
+
+    graf2 = px.bar(
+        df.groupby(['Usuario', 'Tipo de Reporte'])['Cantidad'].mean().reset_index(),
+        x='Usuario', y='Cantidad', color='Tipo de Reporte',
+        title='Promedio por Usuario y Tipo de Reporte'
+    )
+
     graf3 = px.pie(df, names='Region', title='Distribución por Región')
-    graf4 = px.box(df, x='Usuario', y='Cantidad', title='Distribución del Consumo por Usuario')
+
+    graf4 = px.box(df, x='Usuario', y='Cantidad',
+                   title='Distribución del Consumo por Usuario')
+
+    # --- (Opcional) Entrenamiento IA / predicción ---
+    # Asumo que tienes estas funciones definidas:
+    modelo, mse, r2 = entrenar_modelo(df)
+    mes_actual_dt = df['Fecha'].max()
+    mes_siguiente = df['Fecha'].dt.month.max() + 1
+    prediccion_futura = predecir_consumo(mes_siguiente, modelo)
+
+    consumo_promedio = df['Cantidad'].mean()
+    categoria_bayes = "IA"   # placeholder
+    cluster = 2              # placeholder
+
+    # Sistema experto + IA
+    recomendacion = sistema_experto(consumo_promedio, prediccion_futura, categoria_bayes, cluster)
+    # `recomendacion` es una lista de textos
+
+    # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    # GUARDADO SEGURO DE RECOMENDACIONES
+    # Unimos los puntos y guardamos UNA sola recomendación del día
+    if request.user.is_authenticated and recomendacion:
+        texto_general = " • ".join(recomendacion)
+        # Usa el mismo algoritmo que decidiste para el dashboard (p. ej. 'general')
+        guardar_recomendacion(request.user, texto_general, algoritmo='general')
+    # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+    # Serie mensual histórica promedio por mes
+    df_mensual = (
+        df.groupby(df['Fecha'].dt.to_period('M'))['Cantidad']
+          .mean()
+          .reset_index()
+    )
+    df_mensual['Periodo'] = df_mensual['Fecha'].dt.to_timestamp()
+    df_mensual.rename(columns={'Cantidad': 'PromedioMensual'}, inplace=True)
+
+    # Punto futuro para mostrar la predicción
+    next_period_ts = (mes_actual_dt.to_period('M') + 1).to_timestamp()
+
+    fig_cmp = go.Figure()
+    # Línea histórica
+    fig_cmp.add_trace(go.Scatter(
+        x=df_mensual['Periodo'], y=df_mensual['PromedioMensual'],
+        mode='lines+markers', name='Histórico (promedio mensual)'
+    ))
+    # Proyección
+    if not df_mensual.empty and prediccion_futura is not None:
+        fig_cmp.add_trace(go.Scatter(
+            x=[df_mensual['Periodo'].iloc[-1], next_period_ts],
+            y=[df_mensual['PromedioMensual'].iloc[-1], prediccion_futura],
+            mode='lines', name='Proyección', line=dict(dash='dash')
+        ))
+        fig_cmp.add_trace(go.Scatter(
+            x=[next_period_ts], y=[prediccion_futura],
+            mode='markers', name='Predicción IA',
+            marker=dict(size=11, symbol='diamond')
+        ))
+
+    fig_cmp.update_layout(
+        title='Consumo Histórico vs Predicción IA',
+        xaxis_title='Mes',
+        yaxis_title='Consumo (m³)',
+        legend_title='Serie'
+    )
 
     # --- Contexto para el template ---
     context = {
@@ -558,10 +634,14 @@ def dashboard_global(request):#Vista para ver datos de manera global de todos lo
         'graf2': graf2.to_json(),
         'graf3': graf3.to_json(),
         'graf4': graf4.to_json(),
+        'graf5': fig_cmp.to_json(),
+        'recomendaciones': recomendacion,
+        'mse': round(mse, 2) if mse is not None else None,
+        'r2': round(r2, 3) if r2 is not None else None,
+        'prediccion': round(prediccion_futura, 2) if prediccion_futura is not None else None,
     }
 
     return render(request, 'dashboard.html', context)
-
 def procesar_regresion(reportes, usuario=None):#Vista que procesa los datos para guardar en la base de datos
     #Recibe y procesa los datos antes de guardar en la base datos
     df = pd.DataFrame(list(reportes.values('fecha', 'cantidad')))
@@ -612,15 +692,16 @@ def procesar_regresion(reportes, usuario=None):#Vista que procesa los datos para
         'datos': df_mes.to_dict(orient='records')
     }
 
-def regresion_lineal(request):#Vista que aplica el algoritmo de regresion lineal a un solo usuario
-    #Obtiene los datos desde la base de datos
+@login_required#Protege los endpoints si el usuario no esta logeado
+def regresion_lineal(request):  # Vista que aplica el algoritmo de regresion lineal a un solo usuario
+    # Obtiene los datos desde la base de datos
     reportes = consumoagua.objects.filter(id_usuario=request.user).select_related('id_domicilio')
     df = pd.DataFrame(list(reportes.values('fecha', 'cantidad')))
 
     if df.empty:
         return render(request, 'regresion.html', {'empty': True})
 
-    #Limpia los  datos
+    # Limpia los datos
     df['fecha'] = pd.to_datetime(df['fecha'], errors='coerce')
     df['cantidad'] = pd.to_numeric(df['cantidad'], errors='coerce')
     df = df.dropna(subset=['fecha', 'cantidad'])
@@ -629,7 +710,7 @@ def regresion_lineal(request):#Vista que aplica el algoritmo de regresion lineal
     if df.empty:
         return render(request, 'regresion.html', {'empty': True})
 
-    #Agrupa por mes
+    # Agrupa por mes
     df['mes_num'] = df['fecha'].dt.month
     df_mes = df.groupby('mes_num', as_index=False)['cantidad'].mean()
 
@@ -639,30 +720,30 @@ def regresion_lineal(request):#Vista que aplica el algoritmo de regresion lineal
             'mensaje': 'Se necesitan al menos 2 meses de datos para la regresión.'
         })
 
-    #Prepara las variables para el modelo
+    # Prepara las variables para el modelo
     X = df_mes[['mes_num']]
     y = df_mes['cantidad']
 
-    #Entrena a el modelo
+    # Entrena el modelo
     modelo = LinearRegression()
     modelo.fit(X, y)
 
-    #Calcula predicciones y metricas
+    # Calcula predicciones y métricas
     y_pred = modelo.predict(X)
     r2 = r2_score(y, y_pred)
     mse = mean_squared_error(y, y_pred)
 
-    #Obtiene los coeficientes del modelo
+    # Coeficientes del modelo
     b0 = modelo.intercept_      # Intercepto (β₀)
     b1 = modelo.coef_[0]        # Pendiente (β₁)
 
-    #Calcula las predicciones para el siguiente mes
+    # Predicción para el siguiente mes
     mes_siguiente = X['mes_num'].max() + 1
     prediccion_futura = modelo.predict([[mes_siguiente]])[0]
-    
+
     usuario_data = procesar_regresion(reportes, request.user)
-    
-    #Recomendaciones automaticas
+
+    # Recomendaciones automáticas
     promedio_actual = y.mean()
     if prediccion_futura > promedio_actual * 1.15:
         texto = (
@@ -672,23 +753,20 @@ def regresion_lineal(request):#Vista que aplica el algoritmo de regresion lineal
         )
     elif prediccion_futura < promedio_actual * 0.85:
         texto = (
-            f"Se proyecta una reduccion en tu consumo ({prediccion_futura:.2f} m³). "
-            "¡Excelente! Continua con tus habitos de ahorro de agua."
+            f"Se proyecta una reducción en tu consumo ({prediccion_futura:.2f} m³). "
+            "¡Excelente! Continúa con tus hábitos de ahorro de agua."
         )
     else:
         texto = (
             f"Tu consumo proyectado ({prediccion_futura:.2f} m³) se mantiene estable "
-            "en relacion con tu promedio. No se detectan cambios significativos."
+            "en relación con tu promedio. No se detectan cambios significativos."
         )
 
-    #Guardar o actualizar la recomendacion
-    recomendaciones.objects.update_or_create(
-        id_usuario=request.user,
-        fecha=date.today(),
-        defaults={'texto': texto}
-    )
+    #Metodo para guardar las recomendaciones
+    from .utils.help import guardar_recomendacion
+    guardar_recomendacion(request.user, texto, algoritmo='regresion')
 
-    #Prepara los datos para la vista
+    # Prepara los datos para la vista
     context = {
         'r2': round(r2, 3),
         'mse': round(mse, 2),
@@ -699,16 +777,16 @@ def regresion_lineal(request):#Vista que aplica el algoritmo de regresion lineal
         'usuario': usuario_data,
         'recomendacion': texto,
         'explicacion': (
-            "Se aplicó un modelo de regresion lineal simple para estimar la tendencia del consumo "
-            "mensual de agua. El modelo ajusta una linea recta a los valores promedio por mes, "
-            "evaluando su precision mediante el coeficiente de determinacion (R²) y el error cuadratico medio (MSE). "
+            "Se aplicó un modelo de regresión lineal simple para estimar la tendencia del consumo "
+            "mensual de agua. El modelo ajusta una línea recta a los valores promedio por mes, "
+            "evaluando su precisión mediante el coeficiente de determinación (R²) y el error cuadrático medio (MSE). "
             "Finalmente, se realizó una predicción para el siguiente mes basada en la tendencia calculada."
         )
     }
 
-    #Lo envia a el template
     return render(request, 'regresion.html', context)
 
+@login_required#Protege los endpoints si el usuario no esta logeado
 def regresion_global(request):#Vista que aplica el algoritmo de regresion lineal para todos los usuarios
     #Obtiene los datos desde la base de datos
     reportes = consumoagua.objects.all()
@@ -779,10 +857,12 @@ def regresion_global(request):#Vista que aplica el algoritmo de regresion lineal
     #Lo envia a el template
     return render(request, 'regresion_global.html', context)
 
+@login_required#Protege los endpoints si el usuario no esta logeado
 def historial_metricas(request):#Vista para ver las metricas
     metricas = RegresionMetricas.objects.filter(usuario=request.user).order_by('-fecha_entrenamiento')
     return render(request, 'historial_metricas.html', {'metricas': metricas})
 
+@login_required#Protege los endpoints si el usuario no esta logeado
 def reentrenar_bayes(request):#Vista para que el usuario reentrene al modelo
     #Permite reentrenar manualmente el modelo Naive Bayes
     if request.method == 'POST':
@@ -815,6 +895,7 @@ def reentrenar_bayes(request):#Vista para que el usuario reentrene al modelo
         messages.success(request, 'El modelo Bayesiano fue reentrenado correctamente.')
         return redirect('bayes')
 
+@login_required#Protege los endpoints si el usuario no esta logeado
 def clasificacion_bayes(request):#Vista con la logica necesaria para ejecutar el modelo de Bayes
     usuario = request.user  # revisa credendicales del usuario 
     reportes = consumoagua.objects.select_related('id_domicilio', 'id_usuario').filter(id_usuario=usuario)
@@ -870,15 +951,10 @@ def clasificacion_bayes(request):#Vista con la logica necesaria para ejecutar el
             f"Tu consumo se encuentra en el rango alto. Te recomendamos revisar tus instalaciones "
             "y adoptar practicas de ahorro para disminuir el gasto de agua."
         )
+        #Metodo para guardar las recomendaciones
+        from .utils.help import guardar_recomendacion
+        guardar_recomendacion(request.user, texto, algoritmo='bayes')
 
-    # Guardar la recomendacion ---
-    recomendaciones.objects.update_or_create(
-        id_usuario=usuario,
-        fecha=date.today(),
-        defaults={'texto': texto}
-    )
-
-    
     #Realiza un Conteo distribuciones
     conteo = df['categoria'].value_counts().reset_index()
     conteo.columns = ['Nivel', 'Cantidad']
@@ -901,10 +977,12 @@ def clasificacion_bayes(request):#Vista con la logica necesaria para ejecutar el
 
     return render(request, 'bayes.html', context)
 
+@login_required#Protege los endpoints si el usuario no esta logeado
 def historial_bayes(request):#Vista del historial del modelo
     historial = ClasificacionBayes.objects.filter(usuario=request.user).order_by('-fecha_prediccion')
     return render(request, 'historial_bayes.html', {'historial': historial})
 
+@login_required#Protege los endpoints si el usuario no esta logeado
 def kmeans_view(request):#Vista con la logica necesaria para ejecutar el modelo K-Means
     #Numero de clusteres
     k = int(request.GET.get('k', 3))
@@ -975,12 +1053,9 @@ def kmeans_view(request):#Vista con la logica necesaria para ejecutar el modelo 
                     "Te recomendamos revisar fugas y considerar medidas de ahorro."
                 )
 
-            # Guardar recomendación en BD solo para cada usuario
-            recomendaciones.objects.update_or_create(
-                id_usuario=usuario,
-                fecha=date.today(),
-                defaults={'texto': texto}
-            )
+            #Metodo para guardar las recomendaciones
+            from .utils.help import guardar_recomendacion
+            guardar_recomendacion(request.user, texto, algoritmo='kmeans')
 
             # Si es el usuario logeado, mostrarla
             if usuario.username == usuario_actual:
@@ -989,7 +1064,7 @@ def kmeans_view(request):#Vista con la logica necesaria para ejecutar el modelo 
         except User.DoesNotExist:
             continue
 
-    #Crea lla tabla resumen
+    #Crea la tabla resumen
     resumen = (
         df.groupby('Cluster')
         .agg({'Consumo': ['mean', 'min', 'max', 'count']})
@@ -1016,6 +1091,7 @@ def kmeans_view(request):#Vista con la logica necesaria para ejecutar el modelo 
 
     return render(request, 'kmeans.html', context)
 
+@login_required#Protege los endpoints si el usuario no esta logeado
 def historial_kmeans(request):#Vista del historial del modelo K-Means
    
     #Obtiene los datos de la Base de Datos
@@ -1060,6 +1136,14 @@ def historial_kmeans(request):#Vista del historial del modelo K-Means
 
     return render(request, 'historial_kmeans.html', context)
 
+    hoy = timezone.now().date()
+    obj, _ = recomendaciones.objects.update_or_create(
+        id_usuario=user,
+        algoritmo=algoritmo,
+        fecha=hoy,
+        defaults={'texto': texto},
+    )
+    return obj
 
 
 
