@@ -6,7 +6,7 @@ from django.contrib.auth import login, logout, authenticate #Metodos de autentic
 from django.contrib.auth.decorators import login_required#Proteger las rutas
 from django.db import IntegrityError #Errores en DB
 from django.http import HttpResponse, FileResponse # mensajes en pantalla
-from .formdom import RegistroDom, RegistroCosumo #Traer mis formularios
+from .formdom import RegistroDom, RegistroCosumo, RegistroForm #Traer mis formularios
 from .models import recomendaciones, consumoagua, domicilior, RegresionMetricas, ClasificacionBayes, EntrenamientoBayes, KMeansResultado #Traer mis modelos
 from django.core.paginator import Paginator #Agregar paginacion en la tabla
 import openpyxl#Para trabajar con archivos de excel
@@ -86,28 +86,28 @@ def home(request):  # Vista del Inicio
 
     return render(request, 'inicio.html', {'imagenes': imagenes})
 
-def sigup(request):#Vista del registro de usuarios
-    if request.method == 'GET':#Enviando el formulario a pantalla
-        return render(request,'registro.html',{
-            'form' : UserCreationForm
-        })
+def sigup(request):#Vista del Registro de Usuario
+    if request.method == 'GET':#Metodo Get, cuando es una peticion
+        return render(request, 'registro.html', {"form": None})
     else:
-        if request.POST['password1'] == request.POST['password2']:#Verificacion de datos antes de guardar
-            try:#manejo de errores
-                #registro de usuario
-                user = User.objects.create_user(username=request.POST['username'], password=request.POST['password1'])
-                user.save()#guardar el usuario en la BD
-                login(request,user)#crea el id de inicio de sesion
-                return redirect('domicilio')#envia a la vista domicilio
-            except IntegrityError:
-                return render(request,'registro.html',{#error por si el usuario ya existe
-                    'form' : UserCreationForm,
-                    "error" : 'Usuario ya existe'
+        if request.POST['password1'] == request.POST['password2']:#Validaciones antes de guardar
+            try:
+                user = User.objects.create_user(#Inputs para guardar
+                    username=request.POST['username'],
+                    password=request.POST['password1'],
+                    email=request.POST.get('email', '').strip()
+                )
+                user.save()#Guarda el usuario en laa bd
+                login(request, user)#Crea el id de inicio de sesion
+                return redirect('domicilio')
+            except IntegrityError:#Manejo de errores en pantalla
+                return render(request, 'registro.html', {
+                    "error": "Este usuario ya existe"
                 })
-        return render(request,'registro.html',{
-            'form' : UserCreationForm,
-            "error" : 'Corrige los errores'
+        return render(request, 'registro.html', {
+            "error": "Contraseñas incorrectas"
         })
+
                 
 def salir(request):#Vista para cerrar sesion
     logout(request)

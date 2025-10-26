@@ -115,6 +115,24 @@
                                 />
                             </div>
                         </div>
+                        <!--Input del Correo-->
+                        <div class="mb-3">
+                           <label for="email" class="form-label">Correo electrónico</label>
+                            <div class="input-group">
+                              <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                              <input
+                                type="email"
+                                name="email"
+                                id="email"
+                                class="form-control"
+                                placeholder="example@dominio.com"
+                                autocomplete="email"
+                                required
+                                value="{{ request.POST.email|default:'' }}"
+                              />
+                            </div>
+                        </div>
+
 
                         <!-- Input de Contraseña 1 -->
                         <div class="mb-3">
