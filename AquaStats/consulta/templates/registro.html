@@ -115,6 +115,42 @@
                                 />
                             </div>
                         </div>
+                        <!-- Input Nombre -->
+                        <div class="mb-3">
+                          <label for="first_name" class="form-label">Nombre</label>
+                          <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
+                            <input
+                              type="text"
+                              name="first_name"
+                              id="first_name"
+                              class="form-control"
+                              placeholder="Tu nombre"
+                              value="{{ request.POST.first_name|default:'' }}"
+                              autocomplete="given-name"
+                              required
+                            />
+                          </div>
+                        </div>
+
+                        <!--Input Apellido -->
+                        <div class="mb-3">
+                          <label for="last_name" class="form-label">Apellido</label>
+                          <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-person-badge-fill"></i></span>
+                            <input
+                              type="text"
+                              name="last_name"
+                              id="last_name"
+                              class="form-control"
+                              placeholder="Tu apellido"
+                              value="{{ request.POST.last_name|default:'' }}"
+                              autocomplete="family-name"
+                              required
+                            />
+                          </div>
+                        </div>
+
                         <!--Input del Correo-->
                         <div class="mb-3">
                            <label for="email" class="form-label">Correo electrónico</label>

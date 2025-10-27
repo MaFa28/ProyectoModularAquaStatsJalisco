@@ -11,9 +11,9 @@ from .models import recomendaciones, consumoagua, domicilior, RegresionMetricas,
 from django.core.paginator import Paginator #Agregar paginacion en la tabla
 import openpyxl#Para trabajar con archivos de excel
 import io  #Trabajar con los PDF
+import re #validacion del correo
 import pandas as pd #Manejo de datos
 import numpy as np#Manejo de datos y los muestra en graficas
-#import json #Utilizar instrucciones Javascript
 import plotly.express as px #Manejo de datos y muestra datos en dashboard
 from datetime import datetime #para convertir la informacion para exportar
 from reportlab.lib.pagesizes import letter#Crear PDF
@@ -86,27 +86,55 @@ def home(request):  # Vista del Inicio
 
     return render(request, 'inicio.html', {'imagenes': imagenes})
 
-def sigup(request):#Vista del Registro de Usuario
-    if request.method == 'GET':#Metodo Get, cuando es una peticion
+def sigup(request):  # Vista del Registro de Usuario
+    if request.method == 'GET':  # Metodo GET: muestra el formulario
         return render(request, 'registro.html', {"form": None})
     else:
-        if request.POST['password1'] == request.POST['password2']:#Validaciones antes de guardar
-            try:
-                user = User.objects.create_user(#Inputs para guardar
-                    username=request.POST['username'],
-                    password=request.POST['password1'],
-                    email=request.POST.get('email', '').strip()
-                )
-                user.save()#Guarda el usuario en laa bd
-                login(request, user)#Crea el id de inicio de sesion
-                return redirect('domicilio')
-            except IntegrityError:#Manejo de errores en pantalla
-                return render(request, 'registro.html', {
-                    "error": "Este usuario ya existe"
-                })
-        return render(request, 'registro.html', {
-            "error": "Contraseñas incorrectas"
-        })
+        #Captura de datos del formulario
+        username   = request.POST.get('username', '').strip()
+        email      = request.POST.get('email', '').strip().lower()
+        first_name = request.POST.get('first_name', '').strip()
+        last_name  = request.POST.get('last_name', '').strip()
+        password1  = request.POST.get('password1', '')
+        password2  = request.POST.get('password2', '')
+
+        #Validacion de contraseñas
+        if password1 != password2:
+            return render(request, 'registro.html', {
+                "error": "Las contraseñas no coinciden."
+            })
+
+        #Validacion de formato de correo electronico
+        patron_email = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+        if not re.match(patron_email, email):
+            return render(request, 'registro.html', {
+                "error": "El correo electrónico no tiene un formato válido."
+            })
+
+        #Validacion de duplicado de correo
+        if User.objects.filter(email__iexact=email).exists():
+            return render(request, 'registro.html', {
+                "error": "Este correo electrónico ya está registrado."
+            })
+
+        #Creación del usuario
+        try:
+            user = User.objects.create_user(
+                username=username,
+                password=password1,
+                email=email,
+                first_name=first_name,
+                last_name=last_name
+            )
+            user.save()
+
+            login(request, user)  # Inicia sesion automaticamente
+            return redirect('domicilio')  # Redirige al inicio o perfil
+
+        except IntegrityError:
+            return render(request, 'registro.html', {
+                "error": "Este nombre de usuario ya existe."
+            })
 
                 
 def salir(request):#Vista para cerrar sesion
@@ -217,48 +245,70 @@ def perfil(request):#Vista perfil
         'fecha' : fecha,
     })
 
-@login_required   #Protege los endpoints si el usuario no esta logeado 
-def reporte(request):#Vista para los  reportes
-    if request.method == 'GET': #Regresa la misma vista si se crea nuevo formulario
-        return render(request,'reporte.html',{
-            'form' : RegistroCosumo
-        })
-    else: 
-        try: #logica para guardar los datos de la  BdD
-            form = RegistroCosumo(request.POST)
-            if form.is_valid():#Validacion de datos
-                nuevo_rep = form.save(commit=False)
-                nuevo_rep.id_usuario = request.user #pide a la base datos el usuario
-                nuevo_rep.save() #guarda la informacion en la base de datos
-                return redirect('perfil') #redirecciona a la otra vista
-            else:
-                return render(request,'reporte.html',{ #si la condicional no se cumple se regresa el mismo formulario
-                    'form' : RegistroCosumo,
-                    'error' : 'Ingresa datos validos'
-                })
-        except Exception as e: #Manejo de errores
-            return render(request,'reporte.html',{
-                   'form' : RegistroCosumo,
-                   'error' : f'Ocurrio un error'
-               })
+@login_required
+def reporte(request):  # Vista para crear reportes
+    if request.method == 'GET':
+        form = RegistroCosumo()
+        # 🔹 Filtrar domicilios solo del usuario actual
+        form.fields['id_domicilio'].queryset = domicilior.objects.filter(id_usuario=request.user)
 
-@login_required   #Protege los endpoints si el usuario no esta logeado        
-def editar_reporte(request, id):#Vista para editar los reportes
-    reporte = get_object_or_404(consumoagua, id=id, id_usuario=request.user)#Metodo para evitar que otros usuarios modifiquen formularios que no sean suyos
-    
-    
+        return render(request, 'reporte.html', {
+            'form': form
+        })
+
+    else:
+        try:
+            form = RegistroCosumo(request.POST)
+            # 🔹 Repetimos el filtrado por seguridad (en caso de POST manipulados)
+            form.fields['id_domicilio'].queryset = domicilior.objects.filter(id_usuario=request.user)
+
+            if form.is_valid():
+                nuevo_rep = form.save(commit=False)
+                nuevo_rep.id_usuario = request.user
+                nuevo_rep.save()
+                return redirect('perfil')
+
+            else:
+                return render(request, 'reporte.html', {
+                    'form': form,
+                    'error': 'Por favor ingresa datos válidos.'
+                })
+
+        except Exception as e:
+            return render(request, 'reporte.html', {
+                'form': form,
+                'error': f'Ocurrió un error al guardar el reporte: {e}'
+            })
+
+@login_required
+def editar_reporte(request, id):  # Vista para editar reportes
+    # Evita que un usuario modifique un reporte que no es suyo
+    reporte = get_object_or_404(consumoagua, id=id, id_usuario=request.user)
+
+    #Procesa el formulario 
     if request.method == 'POST':
         form = RegistroCosumo(request.POST, instance=reporte)
-        if form.is_valid():#Valida si el formulario es valido
-            form.save()#Metodo que guarda la informacion 
-            messages.success(request, 'Reporte Actualizado')
+        #Filtra los domicilios que pertenezcan al usuario logeado
+        form.fields['id_domicilio'].queryset = domicilior.objects.filter(id_usuario=request.user)
+
+        if form.is_valid():
+            form.save()
+            messages.success(request, ' Reporte actualizado correctamente.')
             return redirect('perfil')
         else:
-            messages.error(request, 'Error al Actualizar')#Mensaje de error
+            messages.error(request, ' Error al actualizar el reporte.')
     else:
         form = RegistroCosumo(instance=reporte)
-    return render(request,'editarrepo.html',{
-        'form' : form
+        #Filtrado en el GET
+        form.fields['id_domicilio'].queryset = domicilior.objects.filter(id_usuario=request.user)
+
+        # Si el usuario no tiene domicilios registrados
+        if not form.fields['id_domicilio'].queryset.exists():
+            messages.warning(request, 'No tienes domicilios registrados. Debes agregar uno antes de editar reportes.')
+
+    #Renderizado del formulario
+    return render(request, 'editarrepo.html', {
+        'form': form
     })
 
 @login_required  #Protege los endpoints si el usuario no esta logeado
