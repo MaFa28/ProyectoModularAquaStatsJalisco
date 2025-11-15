@@ -1,113 +1,166 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>AquaStatsJalisco</title>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AquaStatsJalisco</title>
 
-  <!-- Bootstrap y Icons -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
-  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <!-- Bootstrap y Icons -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
-  <style>
-    :root{
-      --brand-start:#007BFF;
-      --brand-end:#1095f4;
-    }
-    body{
-      background:#f8f9fa;
-      background-image:
-        radial-gradient(900px 360px at -10% -10%, rgba(16,149,244,.08), transparent 60%),
-        radial-gradient(700px 300px at 110% 110%, rgba(0,123,255,.08), transparent 60%);
-    }
-    /* NAVBAR (sin cambiar funcionamiento) */
-    .navbar{ background:linear-gradient(90deg,var(--brand-start),var(--brand-end)); }
-    .navbar-brand{ color:#fff !important; font-weight:700; font-size:1.4rem; }
-    .nav-link{ color:#f8f9fa !important; transition:.2s; }
-    .nav-link:hover{ color:#ffdd57 !important; }
+    <style>
+      :root {
+        --brand-start: #007bff;
+        --brand-end: #1095f4;
+      }
+      body {
+        background: #f8f9fa;
+        background-image: radial-gradient(
+            900px 360px at -10% -10%,
+            rgba(16, 149, 244, 0.08),
+            transparent 60%
+          ),
+          radial-gradient(
+            700px 300px at 110% 110%,
+            rgba(0, 123, 255, 0.08),
+            transparent 60%
+          );
+      }
+      /* NAVBAR */
+      .navbar {
+        background: linear-gradient(
+          90deg,
+          var(--brand-start),
+          var(--brand-end)
+        );
+        backdrop-filter: saturate(140%) blur(8px);
+        -webkit-backdrop-filter: saturate(140%) blur(8px);
+      }
+      .navbar-brand {
+        color: #fff !important;
+        font-weight: 700;
+        font-size: 1.25rem;
+      }
+      .nav-link {
+        color: #f8f9fa !important;
+        transition: 0.2s;
+      }
+      .nav-link:hover {
+        color: #ffdd57 !important;
+      }
 
-    /* Cards suaves */
-    .card-soft{
-      border:none;
-      border-radius:1rem;
-      box-shadow:0 12px 30px rgba(0,0,0,.08);
-      background:#fff;
-      overflow:hidden;
-    }
-    .card-head{
-      background:linear-gradient(90deg,rgba(0,123,255,.08),rgba(16,149,244,.08));
-    }
+      /* Cards suaves */
+      .card-soft {
+        border: none;
+        border-radius: 1rem;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+        background: #fff;
+        overflow: hidden;
+      }
+      .card-head {
+        background: linear-gradient(
+          90deg,
+          rgba(0, 123, 255, 0.08),
+          rgba(16, 149, 244, 0.08)
+        );
+      }
 
-    /* Tabla */
-    .table-wrap{
-      border-radius:.75rem;
-      overflow:auto;
-      box-shadow:0 6px 18px rgba(0,0,0,.06);
-      background:#fff;
-    }
-    thead th{
-      position:sticky;
-      top:0;
-      z-index:1;
-    }
+      /* Tabla */
+      .table-wrap {
+        border-radius: 0.75rem;
+        overflow: auto;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+        background: #fff;
+      }
+      thead th {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+      }
 
-    /* Badges */
-    .badge-soft{
-      background:rgba(0,123,255,.08);
-      color:#0a58ca;
-      border:1px solid rgba(0,123,255,.15);
-      padding:.35rem .6rem;
-      border-radius:999px;
-      font-weight:600;
-    }
+      /* Badges */
+      .badge-soft {
+        background: rgba(0, 123, 255, 0.08);
+        color: #0a58ca;
+        border: 1px solid rgba(0, 123, 255, 0.15);
+        padding: 0.35rem 0.6rem;
+        border-radius: 999px;
+        font-weight: 600;
+      }
 
-    /* Botón gradiente */
-    .btn-gradient{
-      background:linear-gradient(90deg,var(--brand-start),var(--brand-end));
-      border:none;
-      color:#fff;
-    }
-    .btn-gradient:hover{ filter:brightness(1.05); }
-  </style>
-</head>
+      /* Botón gradiente */
+      .btn-gradient {
+        background: linear-gradient(
+          90deg,
+          var(--brand-start),
+          var(--brand-end)
+        );
+        border: none;
+        color: #fff;
+      }
+      .btn-gradient:hover {
+        filter: brightness(1.05);
+      }
+    </style>
+  </head>
 
-<body>
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg shadow-sm">
-    <div class="container">
-      <a class="navbar-brand" href="/">
-        <i class="bi bi-droplet-half"></i> AquaStats
-      </a>
+  <body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg shadow-sm">
+      <div class="container">
+        <a class="navbar-brand" href="/">
+          <i class="bi bi-droplet-half"></i> AquaStats
+        </a>
 
-      <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
+        <button
+          class="navbar-toggler text-white"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
 
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <div class="navbar-nav ms-auto">
-          {% if user.is_authenticated %}
-            <a class="nav-link" href="/salir"><i class="bi bi-box-arrow-right"></i> Salir</a>
-          {% else %}
-            <a class="nav-link" href="/sesion"><i class="bi bi-box-arrow-in-right"></i> Iniciar sesión</a>
-            <a class="nav-link" href="/registro"><i class="bi bi-person-plus"></i> Registrarse</a>
-          {% endif %}
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <div class="navbar-nav ms-auto">
+            {% if user.is_authenticated %}
+            <a class="nav-link" href="/salir"
+              ><i class="bi bi-box-arrow-right"></i> Salir</a
+            >
+            {% else %}
+            <a class="nav-link" href="/sesion"
+              ><i class="bi bi-box-arrow-in-right"></i> Iniciar sesión</a
+            >
+            <a class="nav-link" href="/registro"
+              ><i class="bi bi-person-plus"></i> Registrarse</a
+            >
+            {% endif %}
+          </div>
         </div>
       </div>
-    </div>
-  </nav>
-  <!-- Fin Navbar -->
+    </nav>
+    <!-- Fin Navbar -->
 
-  <div class="container py-5">
-    <h2 class="text-center text-primary mb-4">Historial de Análisis K-Means</h2>
+    <div class="container py-5">
+      <h2 class="text-center text-primary mb-4">
+        Historial de Análisis K-Means
+      </h2>
 
-    {% if empty %}
+      {% if empty %}
       <div class="alert alert-warning text-center shadow-sm">
         <i class="bi bi-exclamation-triangle me-1"></i>
         No hay análisis registrados aún.
       </div>
-    {% else %}
+      {% else %}
 
       <!-- Resumen por usuario -->
       <div class="card card-soft mb-4">
@@ -117,7 +170,9 @@
         <div class="card-body">
           <div class="table-wrap">
             <div class="table-responsive">
-              <table class="table table-bordered table-hover text-center align-middle mb-0">
+              <table
+                class="table table-bordered table-hover text-center align-middle mb-0"
+              >
                 <thead class="table-primary">
                   <tr>
                     <th>Usuario</th>
@@ -128,12 +183,14 @@
                 </thead>
                 <tbody>
                   {% for r in resumen %}
-                    <tr>
-                      <td>{{ r.usuario__username }}</td>
-                      <td>{{ r.total_analisis }}</td>
-                      <td><span class="badge-soft">#{{ r.ultimo_cluster }}</span></td>
-                      <td>{{ r.promedio_consumo|floatformat:2 }}</td>
-                    </tr>
+                  <tr>
+                    <td>{{ r.usuario__username }}</td>
+                    <td>{{ r.total_analisis }}</td>
+                    <td>
+                      <span class="badge-soft">#{{ r.ultimo_cluster }}</span>
+                    </td>
+                    <td>{{ r.promedio_consumo|floatformat:2 }}</td>
+                  </tr>
                   {% endfor %}
                 </tbody>
               </table>
@@ -148,7 +205,7 @@
           <h5 class="m-0 text-center">Evolución del Consumo Promedio</h5>
         </div>
         <div class="card-body">
-          <div id="grafica" style="height: 520px;"></div>
+          <div id="grafica" style="height: 520px"></div>
         </div>
       </div>
 
@@ -171,12 +228,12 @@
                 </thead>
                 <tbody>
                   {% for r in resultados %}
-                    <tr>
-                      <td>{{ r.usuario.username }}</td>
-                      <td><span class="badge-soft">#{{ r.cluster }}</span></td>
-                      <td>{{ r.promedio_consumo|floatformat:2 }}</td>
-                      <td>{{ r.fecha_analisis|date:"d/m/Y H:i" }}</td>
-                    </tr>
+                  <tr>
+                    <td>{{ r.usuario.username }}</td>
+                    <td><span class="badge-soft">#{{ r.cluster }}</span></td>
+                    <td>{{ r.promedio_consumo|floatformat:2 }}</td>
+                    <td>{{ r.fecha_analisis|date:"d/m/Y H:i" }}</td>
+                  </tr>
                   {% endfor %}
                 </tbody>
               </table>
@@ -185,33 +242,37 @@
         </div>
       </div>
 
+      {% endif %}
+
+      <!--Botones-->
+      <div
+        class="d-flex flex-column flex-sm-row justify-content-center gap-2 mt-4"
+      >
+        <a href="{% url 'kmeans' %}" class="btn btn-danger">
+          <i class="bi bi-arrow-left-circle me-1"></i> Volver
+        </a>
+        <a href="/dashboard" class="btn btn-gradient">
+          <i class="bi bi-speedometer2 me-1"></i> Ir al dashboard
+        </a>
+      </div>
+    </div>
+
+    <!--Render Plotly-->
+    {% if not empty %}
+    <script>
+      (function () {
+        try {
+          const grafica = JSON.parse("{{ grafica|escapejs }}");
+          Plotly.newPlot("grafica", grafica.data, grafica.layout, {
+            responsive: true,
+          });
+        } catch (e) {
+          console.error("No se pudo renderizar la gráfica de evolución:", e);
+        }
+      })();
+    </script>
     {% endif %}
 
-    <!--Botones-->
-    <div class="d-flex flex-column flex-sm-row justify-content-center gap-2 mt-4">
-      <a href="{% url 'kmeans' %}" class="btn btn-danger">
-        <i class="bi bi-arrow-left-circle me-1"></i> Volver
-      </a>
-      <a href="/dashboard" class="btn btn-gradient">
-        <i class="bi bi-speedometer2 me-1"></i> Ir al dashboard
-      </a>
-    </div>
-  </div>
-
-  <!--Render Plotly-->
-  {% if not empty %}
-  <script>
-    (function(){
-      try{
-        const grafica = JSON.parse('{{ grafica|escapejs }}');
-        Plotly.newPlot('grafica', grafica.data, grafica.layout, {responsive:true});
-      }catch(e){
-        console.error('No se pudo renderizar la gráfica de evolución:', e);
-      }
-    })();
-  </script>
-  {% endif %}
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-</body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
 </html>

@@ -7,78 +7,130 @@
     <title>AquaStatsJalisco</title>
 
     <!-- Bootstrap & Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
     <!--Agrea estilos-->
     <style>
-      :root{
-        --brand-start:#007BFF;
-        --brand-end:#1095f4;
+      :root {
+        --brand-start: #007bff;
+        --brand-end: #1095f4;
       }
-      body{
-        background:#f8f9fa;
-        background-image:
-          radial-gradient(1000px 400px at -10% -10%, rgba(16,149,244,.08), transparent 60%),
-          radial-gradient(800px 350px at 110% 110%, rgba(0,123,255,.08), transparent 60%);
-        min-height:100vh;
-        display:flex; flex-direction:column;
+      body {
+        background: #f8f9fa;
+        background-image: radial-gradient(
+            1000px 400px at -10% -10%,
+            rgba(16, 149, 244, 0.08),
+            transparent 60%
+          ),
+          radial-gradient(
+            800px 350px at 110% 110%,
+            rgba(0, 123, 255, 0.08),
+            transparent 60%
+          );
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
       }
 
-      /* NAVBAR (sin cambios de lógica) */
-      .navbar{ background:linear-gradient(90deg,var(--brand-start),var(--brand-end)); }
-      .navbar-brand{ color:#fff!important; font-weight:700; font-size:1.4rem; }
-      .nav-link{ color:#f8f9fa!important; transition:.2s; }
-      .nav-link:hover{ color:#ffdd57!important; }
+      /* NAVBAR */
+      .navbar {
+        background: linear-gradient(
+          90deg,
+          var(--brand-start),
+          var(--brand-end)
+        );
+        backdrop-filter: saturate(140%) blur(8px);
+        -webkit-backdrop-filter: saturate(140%) blur(8px);
+      }
+      .navbar-brand {
+        color: #fff !important;
+        font-weight: 700;
+        font-size: 1.25rem;
+      }
+      .nav-link {
+        color: #f8f9fa !important;
+        transition: 0.2s;
+      }
+      .nav-link:hover {
+        color: #ffdd57 !important;
+      }
 
-      main{ flex:1 }
+      main {
+        flex: 1;
+      }
 
       /* Card del formulario */
-      .form-card{
-        border:none;
-        border-radius:1rem;
-        box-shadow:0 12px 30px rgba(0,0,0,.1);
+      .form-card {
+        border: none;
+        border-radius: 1rem;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
       }
-      .form-card__head{
-        background:linear-gradient(90deg,rgba(0,123,255,.08),rgba(16,149,244,.08));
-        border-top-left-radius:1rem;
-        border-top-right-radius:1rem;
+      .form-card__head {
+        background: linear-gradient(
+          90deg,
+          rgba(0, 123, 255, 0.08),
+          rgba(16, 149, 244, 0.08)
+        );
+        border-top-left-radius: 1rem;
+        border-top-right-radius: 1rem;
       }
-      .btn-success{
-        background:linear-gradient(90deg,#28a745,#2cc056);
-        border:none;
+      .btn-success {
+        background: linear-gradient(90deg, #28a745, #2cc056);
+        border: none;
       }
-      .btn-success:hover{ filter:brightness(.95) }
+      .btn-success:hover {
+        filter: brightness(0.95);
+      }
 
       /* Mensajes de error del form */
-      .form-errors .badge{ margin-right:.25rem; }
+      .form-errors .badge {
+        margin-right: 0.25rem;
+      }
     </style>
   </head>
 
   <body>
-            <!--navbar-->
-            <nav class="navbar navbar-expand-lg shadow-sm">
-                <div class="container">
-                    <a class="navbar-brand" href="/">
-                    <i class="bi bi-droplet-half"></i> AquaStats
-                    </a>
+    <!--navbar-->
+    <nav class="navbar navbar-expand-lg shadow-sm">
+      <div class="container">
+        <a class="navbar-brand" href="/">
+          <i class="bi bi-droplet-half"></i> AquaStats
+        </a>
 
-                    <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                    <span class="navbar-toggler-icon"></span>
-                    </button>
+        <button
+          class="navbar-toggler text-white"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
 
-                    <div class="collapse navbar-collapse" id="navbarNav">
-                        <div class="navbar-nav ms-auto">
-                            {% if user.is_authenticated %}
-                             <a class="nav-link" href="/salir"><i class="bi bi-box-arrow-right"></i> Salir</a>
-                            {% else %}
-                                <a class="nav-link" href="/sesion"><i class="bi bi-box-arrow-in-right"></i> Iniciar sesión</a>
-                                <a class="nav-link" href="/registro"><i class="bi bi-person-plus"></i> Registrarse</a>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </nav>
-            <!--Final navbar-->
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <div class="navbar-nav ms-auto">
+            {% if user.is_authenticated %}
+            <a class="nav-link" href="/salir"
+              ><i class="bi bi-box-arrow-right"></i> Salir</a
+            >
+            {% else %}
+            <a class="nav-link" href="/sesion"
+              ><i class="bi bi-box-arrow-in-right"></i> Iniciar sesión</a
+            >
+            <a class="nav-link" href="/registro"
+              ><i class="bi bi-person-plus"></i> Registrarse</a
+            >
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </nav>
+    <!--Final navbar-->
 
     <!--formulario-->
     <main class="container py-5">
@@ -96,24 +148,21 @@
 
             <div class="card-body p-4 p-md-5">
               <!--Recibe el formulario y sus estilos se aplican abajo-->
-              <div class="mb-3">
-                {{ form }}
-              </div>
+              <div class="mb-3">{{ form }}</div>
 
               {% if error %}
-                <div class="alert alert-danger shadow-sm">{{ error }}</div>
+              <div class="alert alert-danger shadow-sm">{{ error }}</div>
+              {% endif %} {% if form.errors %}<!--Errores en pantalla-->
+              <div class="alert alert-warning form-errors" role="alert">
+                <strong>Revisa los campos:</strong>
+                {% for field, errs in form.errors.items %}
+                <span class="badge text-bg-light">{{ field }}</span>
+                {% endfor %}
+              </div>
               {% endif %}
 
-              {% if form.errors %}<!--Errores en pantalla-->
-                <div class="alert alert-warning form-errors" role="alert">
-                  <strong>Revisa los campos:</strong>
-                  {% for field, errs in form.errors.items %}
-                    <span class="badge text-bg-light">{{ field }}</span>
-                  {% endfor %}
-                </div>
-              {% endif %}
-
-              <div class="d-grid gap-2 mt-3"><!--Botones-->
+              <div class="d-grid gap-2 mt-3">
+                <!--Botones-->
                 <button class="btn btn-success btn-lg" type="submit">
                   <i class="bi bi-save2 me-1"></i> Guardar
                 </button>
@@ -132,43 +181,52 @@
       // Añade clases de Bootstrap a todos los campos del form automaticamente,
       // sin modificar la logica ni el form en Python.
       (function () {
-        const root = document.currentScript.closest('body');
-        const form = root.querySelector('.form-card form, form.card');
+        const root = document.currentScript.closest("body");
+        const form = root.querySelector(".form-card form, form.card");
         if (!form) return;
 
-        const inputs  = form.querySelectorAll('input:not([type=checkbox]):not([type=radio]):not([type=file])');
-        const selects = form.querySelectorAll('select');
-        const areas   = form.querySelectorAll('textarea');
-        const checks  = form.querySelectorAll('input[type=checkbox], input[type=radio]');
-        const files   = form.querySelectorAll('input[type=file]');
-        const labels  = form.querySelectorAll('label');
+        const inputs = form.querySelectorAll(
+          "input:not([type=checkbox]):not([type=radio]):not([type=file])"
+        );
+        const selects = form.querySelectorAll("select");
+        const areas = form.querySelectorAll("textarea");
+        const checks = form.querySelectorAll(
+          "input[type=checkbox], input[type=radio]"
+        );
+        const files = form.querySelectorAll("input[type=file]");
+        const labels = form.querySelectorAll("label");
 
-        inputs.forEach(el => el.classList.add('form-control'));
-        selects.forEach(el => el.classList.add('form-select'));
-        areas.forEach(el => el.classList.add('form-control'));
-        files.forEach(el => el.classList.add('form-control'));
+        inputs.forEach((el) => el.classList.add("form-control"));
+        selects.forEach((el) => el.classList.add("form-select"));
+        areas.forEach((el) => el.classList.add("form-control"));
+        files.forEach((el) => el.classList.add("form-control"));
 
         // Checkboxes / radios en formato Bootstrap
-        checks.forEach(input => {
-          const wrap = document.createElement('div');
-          wrap.className = input.type === 'radio' ? 'form-check form-check-inline' : 'form-check';
+        checks.forEach((input) => {
+          const wrap = document.createElement("div");
+          wrap.className =
+            input.type === "radio"
+              ? "form-check form-check-inline"
+              : "form-check";
           input.parentNode.insertBefore(wrap, input);
           wrap.appendChild(input);
           // Si hay label inmediatamente despues, lo movemos y le damos clase
           const next = input.nextElementSibling;
-          if (next && next.tagName === 'LABEL') {
-            next.classList.add('form-check-label','ms-1');
+          if (next && next.tagName === "LABEL") {
+            next.classList.add("form-check-label", "ms-1");
             wrap.appendChild(next);
           }
-          input.classList.add('form-check-input');
+          input.classList.add("form-check-input");
         });
 
         // Labels mas limpias
-        labels.forEach(l => l.classList.add('form-label'));
+        labels.forEach((l) => l.classList.add("form-label"));
         // Errores de campo visibles
-        form.querySelectorAll('ul.errorlist').forEach(ul => {
-          ul.classList.add('invalid-feedback','d-block','mb-2');
-          ul.querySelectorAll('li').forEach(li => li.classList.add('d-block'));
+        form.querySelectorAll("ul.errorlist").forEach((ul) => {
+          ul.classList.add("invalid-feedback", "d-block", "mb-2");
+          ul.querySelectorAll("li").forEach((li) =>
+            li.classList.add("d-block")
+          );
         });
       })();
     </script>

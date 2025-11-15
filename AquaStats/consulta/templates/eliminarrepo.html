@@ -7,37 +7,74 @@
     <title>AquaStatsJalisco</title>
 
     <!-- Bootstrap y Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
     <!--Estilos-->
     <style>
-      :root{
-        --brand-start:#007BFF;
-        --brand-end:#1095f4;
+      :root {
+        --brand-start: #007bff;
+        --brand-end: #1095f4;
       }
-      body{ background:#f8f9fa; }
+      body {
+        background: #f8f9fa;
+      }
 
-      /* NAVBAR (respetado) */
-      .navbar{ background:linear-gradient(90deg,var(--brand-start),var(--brand-end)); }
-      .navbar-brand{ color:#fff!important; font-weight:700; font-size:1.4rem; }
-      .nav-link{ color:#f8f9fa!important; transition:.2s; }
-      .nav-link:hover{ color:#ffdd57!important; }
+      /* NAVBAR */
+      .navbar {
+        background: linear-gradient(
+          90deg,
+          var(--brand-start),
+          var(--brand-end)
+        );
+        backdrop-filter: saturate(140%) blur(8px);
+        -webkit-backdrop-filter: saturate(140%) blur(8px);
+      }
+      .navbar-brand {
+        color: #fff !important;
+        font-weight: 700;
+        font-size: 1.25rem;
+      }
+      .nav-link {
+        color: #f8f9fa !important;
+        transition: 0.2s;
+      }
+      .nav-link:hover {
+        color: #ffdd57 !important;
+      }
 
       /* Card de confirmación */
-      .confirm-card{
-        border:none;
-        border-radius:1rem;
-        box-shadow:0 12px 30px rgba(0,0,0,.1);
-        margin-top:3rem;
+      .confirm-card {
+        border: none;
+        border-radius: 1rem;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+        margin-top: 3rem;
       }
-      .confirm-head{
-        background:linear-gradient(90deg, rgba(220,53,69,.12), rgba(255,0,0,.08));
-        border-top-left-radius:1rem;
-        border-top-right-radius:1rem;
+      .confirm-head {
+        background: linear-gradient(
+          90deg,
+          rgba(220, 53, 69, 0.12),
+          rgba(255, 0, 0, 0.08)
+        );
+        border-top-left-radius: 1rem;
+        border-top-right-radius: 1rem;
       }
-      .list-icon{ width:1.25rem; display:inline-flex; justify-content:center; }
-      .btn-danger{ box-shadow:0 6px 14px rgba(220,53,69,.2); }
-      .btn-outline-secondary{ box-shadow:0 6px 14px rgba(108,117,125,.12); }
+      .list-icon {
+        width: 1.25rem;
+        display: inline-flex;
+        justify-content: center;
+      }
+      .btn-danger {
+        box-shadow: 0 6px 14px rgba(220, 53, 69, 0.2);
+      }
+      .btn-outline-secondary {
+        box-shadow: 0 6px 14px rgba(108, 117, 125, 0.12);
+      }
     </style>
   </head>
 
@@ -49,17 +86,28 @@
           <i class="bi bi-droplet-half"></i> AquaStats
         </a>
 
-        <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <button
+          class="navbar-toggler text-white"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
           <span class="navbar-toggler-icon"></span>
         </button>
 
         <div class="collapse navbar-collapse" id="navbarNav">
           <div class="navbar-nav ms-auto">
             {% if user.is_authenticated %}
-              <a class="nav-link" href="/salir"><i class="bi bi-box-arrow-right"></i> Salir</a>
+            <a class="nav-link" href="/salir"
+              ><i class="bi bi-box-arrow-right"></i> Salir</a
+            >
             {% else %}
-              <a class="nav-link" href="/sesion"><i class="bi bi-box-arrow-in-right"></i> Iniciar sesión</a>
-              <a class="nav-link" href="/registro"><i class="bi bi-person-plus"></i> Registrarse</a>
+            <a class="nav-link" href="/sesion"
+              ><i class="bi bi-box-arrow-in-right"></i> Iniciar sesión</a
+            >
+            <a class="nav-link" href="/registro"
+              ><i class="bi bi-person-plus"></i> Registrarse</a
+            >
             {% endif %}
           </div>
         </div>
@@ -79,10 +127,14 @@
             </div>
 
             <div class="card-body p-4 p-md-5">
-              <div class="alert alert-warning d-flex align-items-start" role="alert">
+              <div
+                class="alert alert-warning d-flex align-items-start"
+                role="alert"
+              >
                 <i class="bi bi-info-circle-fill me-2"></i>
                 <div>
-                  Esta acción <strong>no se puede deshacer</strong>. ¿Deseas eliminar este reporte?
+                  Esta acción <strong>no se puede deshacer</strong>. ¿Deseas
+                  eliminar este reporte?
                 </div>
               </div>
 
@@ -92,28 +144,39 @@
                   <div class="col-12 col-md-6">
                     <div class="small text-muted">Cantidad</div>
                     <div class="fw-semibold">
-                      <span class="list-icon"><i class="bi bi-droplet"></i></span>
+                      <span class="list-icon"
+                        ><i class="bi bi-droplet"></i
+                      ></span>
                       {{ reporte.cantidad }} m³
                     </div>
                   </div>
                   <div class="col-12 col-md-6">
                     <div class="small text-muted">Tipo de reporte</div>
                     <div class="fw-semibold">
-                      <span class="list-icon"><i class="bi bi-list-check"></i></span>
+                      <span class="list-icon"
+                        ><i class="bi bi-list-check"></i
+                      ></span>
                       {{ reporte.get_tipo_reporte_display }}
                     </div>
                   </div>
                   <div class="col-12 col-md-6">
                     <div class="small text-muted">Fecha</div>
                     <div class="fw-semibold">
-                      <span class="list-icon"><i class="bi bi-calendar3"></i></span>
+                      <span class="list-icon"
+                        ><i class="bi bi-calendar3"></i
+                      ></span>
                       {{ reporte.fecha|date:"d/m/Y" }}
                     </div>
                   </div>
                   <div class="col-12 col-md-6">
                     <div class="small text-muted">Domicilio</div>
-                    <div class="fw-semibold text-truncate" title="{{ reporte.id_domicilio.direccion|default:'—' }}">
-                      <span class="list-icon"><i class="bi bi-geo-alt"></i></span>
+                    <div
+                      class="fw-semibold text-truncate"
+                      title="{{ reporte.id_domicilio.direccion|default:'—' }}"
+                    >
+                      <span class="list-icon"
+                        ><i class="bi bi-geo-alt"></i
+                      ></span>
                       {{ reporte.id_domicilio.direccion|default:"—" }}
                     </div>
                   </div>
@@ -123,7 +186,8 @@
               <!--Form para eliminar -->
               <form method="POST" class="d-grid gap-2">
                 {% csrf_token %}
-                <button type="submit" class="btn btn-danger btn-lg"><!--Botones de accion-->
+                <button type="submit" class="btn btn-danger btn-lg">
+                  <!--Botones de accion-->
                   <i class="bi bi-trash3 me-1"></i> Eliminar definitivamente
                 </button>
                 <a href="/perfil" class="btn btn-outline-secondary">
@@ -137,6 +201,9 @@
     </main>
     <!--scripts-->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
   </body>
 </html>

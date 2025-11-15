@@ -7,51 +7,92 @@
     <title>AquaStatsJalisco</title>
 
     <!-- Bootstrap y Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
     <!--Estilos-->
     <style>
-      :root{
-        --brand-start:#007BFF;
-        --brand-end:#1095f4;
+      :root {
+        --brand-start: #007bff;
+        --brand-end: #1095f4;
       }
-      body{
-        background:#f8f9fa;
-        background-image:
-          radial-gradient(1000px 400px at -10% -10%, rgba(16,149,244,.08), transparent 60%),
-          radial-gradient(800px 350px at 110% 110%, rgba(0,123,255,.08), transparent 60%);
-        min-height:100vh;
-        display:flex; flex-direction:column;
+      body {
+        background: #f8f9fa;
+        background-image: radial-gradient(
+            1000px 400px at -10% -10%,
+            rgba(16, 149, 244, 0.08),
+            transparent 60%
+          ),
+          radial-gradient(
+            800px 350px at 110% 110%,
+            rgba(0, 123, 255, 0.08),
+            transparent 60%
+          );
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
       }
 
-      /* NAVBAR (sin cambios de lógica) */
-      .navbar{ background:linear-gradient(90deg,var(--brand-start),var(--brand-end)); }
-      .navbar-brand{ color:#fff!important; font-weight:700; font-size:1.4rem; }
-      .nav-link{ color:#f8f9fa!important; transition:.2s; }
-      .nav-link:hover{ color:#ffdd57!important; }
+      /* NAVBAR */
+      .navbar {
+        background: linear-gradient(
+          90deg,
+          var(--brand-start),
+          var(--brand-end)
+        );
+        backdrop-filter: saturate(140%) blur(8px);
+        -webkit-backdrop-filter: saturate(140%) blur(8px);
+      }
+      .navbar-brand {
+        color: #fff !important;
+        font-weight: 700;
+        font-size: 1.25rem;
+      }
+      .nav-link {
+        color: #f8f9fa !important;
+        transition: 0.2s;
+      }
+      .nav-link:hover {
+        color: #ffdd57 !important;
+      }
 
-      main{ flex:1 }
+      main {
+        flex: 1;
+      }
 
       /* Card del formulario */
-      .form-card{
-        border:none;
-        border-radius:1rem;
-        box-shadow:0 12px 30px rgba(0,0,0,.1);
-        margin-top:3rem;
+      .form-card {
+        border: none;
+        border-radius: 1rem;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+        margin-top: 3rem;
       }
-      .form-card__head{
-        background:linear-gradient(90deg,rgba(0,123,255,.08),rgba(16,149,244,.08));
-        border-top-left-radius:1rem;
-        border-top-right-radius:1rem;
+      .form-card__head {
+        background: linear-gradient(
+          90deg,
+          rgba(0, 123, 255, 0.08),
+          rgba(16, 149, 244, 0.08)
+        );
+        border-top-left-radius: 1rem;
+        border-top-right-radius: 1rem;
       }
-      .btn-success{
-        background:linear-gradient(90deg,#28a745,#2cc056);
-        border:none;
+      .btn-success {
+        background: linear-gradient(90deg, #28a745, #2cc056);
+        border: none;
       }
-      .btn-success:hover{ filter:brightness(.95) }
+      .btn-success:hover {
+        filter: brightness(0.95);
+      }
 
       /* Errores */
-      .form-errors .badge{ margin-right:.25rem; }
+      .form-errors .badge {
+        margin-right: 0.25rem;
+      }
     </style>
   </head>
 
@@ -63,17 +104,28 @@
           <i class="bi bi-droplet-half"></i> AquaStats
         </a>
 
-        <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <button
+          class="navbar-toggler text-white"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
           <span class="navbar-toggler-icon"></span>
         </button>
 
         <div class="collapse navbar-collapse" id="navbarNav">
           <div class="navbar-nav ms-auto">
             {% if user.is_authenticated %}
-              <a class="nav-link" href="/salir"><i class="bi bi-box-arrow-right"></i> Salir</a>
+            <a class="nav-link" href="/salir"
+              ><i class="bi bi-box-arrow-right"></i> Salir</a
+            >
             {% else %}
-              <a class="nav-link" href="/sesion"><i class="bi bi-box-arrow-in-right"></i> Iniciar sesión</a>
-              <a class="nav-link" href="/registro"><i class="bi bi-person-plus"></i> Registrarse</a>
+            <a class="nav-link" href="/sesion"
+              ><i class="bi bi-box-arrow-in-right"></i> Iniciar sesión</a
+            >
+            <a class="nav-link" href="/registro"
+              ><i class="bi bi-person-plus"></i> Registrarse</a
+            >
             {% endif %}
           </div>
         </div>
@@ -96,28 +148,28 @@
             </div>
 
             <div class="card-body p-4 p-md-5">
-              <div class="mb-3">
-                {{ form }}<!--formulario-->
-              </div>
+              <div class="mb-3">{{ form }}<!--formulario--></div>
 
               {% if error %}<!--Si existe un error-->
-                <div class="alert alert-danger shadow-sm">{{ error }}</div>
+              <div class="alert alert-danger shadow-sm">{{ error }}</div>
+              {% endif %} {% if form.errors %}<!--Si existe un error-->
+              <div class="alert alert-warning form-errors" role="alert">
+                <strong>Revisa los campos:</strong>
+                {% for field, errs in form.errors.items %}
+                <span class="badge text-bg-light">{{ field }}</span>
+                {% endfor %}
+              </div>
               {% endif %}
 
-              {% if form.errors %}<!--Si existe un error-->
-                <div class="alert alert-warning form-errors" role="alert">
-                  <strong>Revisa los campos:</strong>
-                  {% for field, errs in form.errors.items %}
-                    <span class="badge text-bg-light">{{ field }}</span>
-                  {% endfor %}
-                </div>
-              {% endif %}
-
-              <div class="d-grid gap-2 mt-3"><!--Botones de accion-->
+              <div class="d-grid gap-2 mt-3">
+                <!--Botones de accion-->
                 <button type="submit" class="btn btn-success btn-lg">
                   <i class="bi bi-save2 me-1"></i> Guardar cambios
                 </button>
-                <a href="{% url 'ver_domicilios' %}" class="btn btn-outline-secondary">
+                <a
+                  href="{% url 'ver_domicilios' %}"
+                  class="btn btn-outline-secondary"
+                >
                   <i class="bi bi-x-circle"></i> Cancelar
                 </a>
               </div>
@@ -129,42 +181,63 @@
     <!--script para estilos-->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-      // Aplica clases Bootstrap 
+      // Aplica clases Bootstrap
       (function () {
-        const form = document.querySelector('.form-card');
+        const form = document.querySelector(".form-card");
         if (!form) return;
 
         // Inputs / Selects / Textareas
-        form.querySelectorAll('input:not([type=checkbox]):not([type=radio]):not([type=file])')
-          .forEach(el => el.classList.add('form-control'));
-        form.querySelectorAll('select').forEach(el => el.classList.add('form-select'));
-        form.querySelectorAll('textarea').forEach(el => el.classList.add('form-control'));
-        form.querySelectorAll('input[type=file]').forEach(el => el.classList.add('form-control'));
+        form
+          .querySelectorAll(
+            "input:not([type=checkbox]):not([type=radio]):not([type=file])"
+          )
+          .forEach((el) => el.classList.add("form-control"));
+        form
+          .querySelectorAll("select")
+          .forEach((el) => el.classList.add("form-select"));
+        form
+          .querySelectorAll("textarea")
+          .forEach((el) => el.classList.add("form-control"));
+        form
+          .querySelectorAll("input[type=file]")
+          .forEach((el) => el.classList.add("form-control"));
 
         // Checkboxes / Radios
-        form.querySelectorAll('input[type=checkbox], input[type=radio]').forEach(input => {
-          const wrap = document.createElement('div');
-          wrap.className = input.type === 'radio' ? 'form-check form-check-inline' : 'form-check';
-          input.parentNode.insertBefore(wrap, input);
-          wrap.appendChild(input);
-          const next = input.nextElementSibling;
-          if (next && next.tagName === 'LABEL') {
-            next.classList.add('form-check-label','ms-1');
-            wrap.appendChild(next);
-          }
-          input.classList.add('form-check-input');
-        });
+        form
+          .querySelectorAll("input[type=checkbox], input[type=radio]")
+          .forEach((input) => {
+            const wrap = document.createElement("div");
+            wrap.className =
+              input.type === "radio"
+                ? "form-check form-check-inline"
+                : "form-check";
+            input.parentNode.insertBefore(wrap, input);
+            wrap.appendChild(input);
+            const next = input.nextElementSibling;
+            if (next && next.tagName === "LABEL") {
+              next.classList.add("form-check-label", "ms-1");
+              wrap.appendChild(next);
+            }
+            input.classList.add("form-check-input");
+          });
 
         // Labels
-        form.querySelectorAll('label').forEach(l => l.classList.add('form-label'));
+        form
+          .querySelectorAll("label")
+          .forEach((l) => l.classList.add("form-label"));
 
         // Errores de Django
-        form.querySelectorAll('ul.errorlist').forEach(ul => {
-          ul.classList.add('invalid-feedback','d-block','mb-2');
-          ul.querySelectorAll('li').forEach(li => li.classList.add('d-block'));
+        form.querySelectorAll("ul.errorlist").forEach((ul) => {
+          ul.classList.add("invalid-feedback", "d-block", "mb-2");
+          ul.querySelectorAll("li").forEach((li) =>
+            li.classList.add("d-block")
+          );
         });
       })();
     </script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
   </body>
 </html>

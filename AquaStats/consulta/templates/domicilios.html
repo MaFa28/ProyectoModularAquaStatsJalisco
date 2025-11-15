@@ -18,11 +18,15 @@
       }
       body{ background:#f8f9fa; }
 
-      /* NAVBAR (no se modifica comportamiento) */
-      .navbar{ background:linear-gradient(90deg,var(--brand-start),var(--brand-end)); }
-      .navbar-brand{ color:#fff!important; font-weight:700; font-size:1.4rem; }
-      .nav-link{ color:#f8f9fa!important; transition:.2s; }
-      .nav-link:hover{ color:#ffdd57!important; }
+      /* NAVBAR */
+    .navbar{
+      background:linear-gradient(90deg,var(--brand-start),var(--brand-end));
+      backdrop-filter: saturate(140%) blur(8px);
+      -webkit-backdrop-filter: saturate(140%) blur(8px);
+    }
+    .navbar-brand{ color:#fff!important; font-weight:700; font-size:1.25rem }
+    .nav-link{ color:#f8f9fa!important; transition:.2s }
+    .nav-link:hover{ color:#ffdd57!important }
 
       /* Tarjeta contenedora */
       .card{ border:none; border-radius:.75rem; box-shadow:0 8px 20px rgba(0,0,0,.06); }

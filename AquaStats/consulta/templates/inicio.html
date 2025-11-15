@@ -1,133 +1,294 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>AquaStatsJalisco</title>
 
     <!--Bootstrap-->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
     <!--Iconos-->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
 
     <style>
-        body {
-            background-color: #f8f9fa;
+      body {
+        background-color: #f8f9fa;
+      }
+      .navbar {
+        background: linear-gradient(90deg, #007bff, #1095f4);
+      }
+      .navbar-brand {
+        color: #fff !important;
+        font-weight: bold;
+        font-size: 1.4rem;
+      }
+      .nav-link {
+        color: #f8f9fa !important;
+        transition: 0.3s;
+      }
+      .nav-link:hover {
+        color: #ffdd57 !important;
+      }
+
+      /* Carrusel */
+      .carousel-item img {
+        height: 500px;
+        object-fit: cover;
+        border-radius: 10px;
+      }
+      .carousel-caption {
+        background: rgba(0, 0, 0, 0.6);
+        border-radius: 10px;
+      }
+
+      /* ---------- BODYCARDS (degradado azul) ---------- */
+      .bodycards {
+        border-radius: 22px;
+        background: linear-gradient(
+          90deg,
+          #11b3ff 0%,
+          #1a7dff 50%,
+          #2563eb 100%
+        );
+        color: #ffffff;
+        padding: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 14px 44px rgba(30, 91, 255, 0.18);
+      }
+      .bodycards .item {
+        display: flex;
+        gap: 14px;
+        align-items: flex-start;
+        padding: 22px 18px;
+        border-radius: 14px;
+      }
+      .bodycards .item + .item {
+        border-left: 1px solid rgba(255, 255, 255, 0.18);
+      }
+      .bodycards .icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 16px;
+        flex: 0 0 50px;
+        display: grid;
+        place-items: center;
+        font-size: 22px;
+        color: #0a1c4f;
+        background: radial-gradient(
+          120% 120% at 30% 30%,
+          #eaf6ff 0%,
+          #bfe4ff 42%,
+          rgba(255, 255, 255, 0.8) 100%
+        );
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65),
+          0 6px 18px rgba(0, 0, 0, 0.12);
+        opacity: 0.95;
+      }
+      .bodycards h5 {
+        margin: 0 0 6px;
+        font-weight: 800;
+        letter-spacing: 0.2px;
+      }
+      .bodycards p {
+        margin: 0;
+        color: #f1f5ff;
+        opacity: 0.95;
+      }
+
+      @media (max-width: 991.98px) {
+        .bodycards .item + .item {
+          border-left: 0;
+          border-top: 1px solid rgba(255, 255, 255, 0.18);
         }
-        .navbar {
-            background: linear-gradient(90deg, #007BFF, #1095f4);
-        }
-        .navbar-brand {
-            color: #fff !important;
-            font-weight: bold;
-            font-size: 1.4rem;
-        }
-        .nav-link {
-            color: #f8f9fa !important;
-            transition: 0.3s;
-        }
-        .nav-link:hover {
-            color: #ffdd57 !important;
-        }
-        .carousel-item img {
-            height: 500px;
-            object-fit: cover;
-            border-radius: 10px;
-        }
-        .carousel-caption {
-            background: rgba(0, 0, 0, 0.6);
-            border-radius: 10px;
-        }
-        footer {
-            margin-top: 50px;
-            background: #007bff;
-            color: white;
-            text-align: center;
-            padding: 10px 0;
-        }
+      }
+
+      footer {
+        margin-top: 50px;
+        background: #007bff;
+        color: #fff;
+        text-align: center;
+        padding: 10px 0;
+      }
     </style>
-</head>
+  </head>
 
-<body>
-        <!--Navbar-->
-        <nav class="navbar navbar-expand-lg shadow-sm">
-            <div class="container">
-                <a class="navbar-brand" href="/">
-                    <i class="bi bi-droplet-half"></i> AquaStats
-                </a>
+  <body>
+    <!--Navbar-->
+    <nav class="navbar navbar-expand-lg shadow-sm">
+      <div class="container">
+        <a class="navbar-brand" href="/"
+          ><i class="bi bi-droplet-half"></i> AquaStats</a
+        >
 
-                <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+        <button
+          class="navbar-toggler text-white"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
 
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <div class="navbar-nav ms-auto">
-                        {% if user.is_authenticated %}
-                            <a class="nav-link" href="/perfil"><i class="bi bi-person-circle"></i> Perfil</a>
-                            <a class="nav-link" href="/salir"><i class="bi bi-box-arrow-right"></i> Salir</a>
-                        {% else %}
-                            <a class="nav-link" href="/sesion"><i class="bi bi-box-arrow-in-right"></i> Iniciar sesión</a>
-                            <a class="nav-link" href="/registro"><i class="bi bi-person-plus"></i> Registrarse</a>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-        </nav>
-        <!--Fin del Navbar-->
-
-        <!--Encabezzado-->
-        <section class="text-center mt-5 mb-4">
-            <h1 class="fw-bold text-primary">Bienvenido a AquaStats Jalisco</h1>
-            <p class="text-muted fs-5">Analiza tu consumo de agua, predice tendencias y contribuye al ahorro sostenible.</p>
-        </section>
-
-        <!--Carrusel de fotos -->
-        <div class="container mt-5">
-            <h2 class="text-center mb-4">Galeria AquaStats</h2>
-
-            {% if imagenes %}
-            <div id="carouselExampleCaptions" class="carousel slide shadow-lg rounded" data-bs-ride="carousel">
-                <!--Indicadores-->
-                <div class="carousel-indicators">
-                    {% for img in imagenes %}
-                        <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="{{ forloop.counter0 }}"
-                                {% if forloop.first %}class="active"{% endif %}
-                                aria-label="Slide {{ forloop.counter }}"></button>
-                    {% endfor %}
-                </div>
-
-                <!--Imagenes-->
-                <div class="carousel-inner rounded">
-                    {% for img in imagenes %}
-                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                        <img src="{% static img.archivo %}" class="d-block w-100" alt="{{ img.titulo }}">
-                        <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded p-2">
-                            <h5>{{ img.titulo }}</h5>
-                            <p>{{ img.descripcion }}</p>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-
-                <!--Controles-->
-                <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon"></span>
-                </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="next">
-                    <span class="carousel-control-next-icon"></span>
-                </button>
-            </div>
-            {% else %}<!--Si no existen imagenes-->
-                <p class="text-center text-muted">No hay imagenes disponibles.</p>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <div class="navbar-nav ms-auto">
+            {% if user.is_authenticated %}
+            <a class="nav-link" href="/perfil"
+              ><i class="bi bi-person-circle"></i> Perfil</a
+            >
+            <a class="nav-link" href="/salir"
+              ><i class="bi bi-box-arrow-right"></i> Salir</a
+            >
+            {% else %}
+            <a class="nav-link" href="/sesion"
+              ><i class="bi bi-box-arrow-in-right"></i> Iniciar sesión</a
+            >
+            <a class="nav-link" href="/registro"
+              ><i class="bi bi-person-plus"></i> Registrarse</a
+            >
             {% endif %}
+          </div>
+        </div>
+      </div>
+    </nav>
+    <!--Fin del Navbar-->
+
+    <!--Encabezado-->
+    <section class="text-center mt-5 mb-4">
+      <h1 class="fw-bold text-primary">Bienvenido a AquaStats Jalisco</h1>
+      <p class="text-muted fs-5">
+        Analiza tu consumo de agua, predice tendencias y contribuye al ahorro
+        sostenible.
+      </p>
+    </section>
+
+    <!--Carrusel de fotos -->
+    <div class="container mt-5">
+      <h2 class="text-center mb-4">Galería AquaStats</h2>
+
+      {% if imagenes %}
+      <div
+        id="carouselExampleCaptions"
+        class="carousel slide shadow-lg rounded"
+        data-bs-ride="carousel"
+      >
+        <div class="carousel-indicators">
+          {% for img in imagenes %}
+          <button
+            type="button"
+            data-bs-target="#carouselExampleCaptions"
+            data-bs-slide-to="{{ forloop.counter0 }}"
+            {%
+            if
+            forloop.first
+            %}class="active"
+            {%
+            endif
+            %}
+            aria-label="Slide {{ forloop.counter }}"
+          ></button>
+          {% endfor %}
         </div>
 
-        <!--Footer-->
-        <footer>
-            <p class="mb-0">© 2025 AquaStats Jalisco | Proyecto de Minería de Datos y ML</p>
-        </footer>
+        <div class="carousel-inner rounded">
+          {% for img in imagenes %}
+          <div class="carousel-item {% if forloop.first %}active{% endif %}">
+            <img
+              src="{% static img.archivo %}"
+              class="d-block w-100"
+              alt="{{ img.titulo }}"
+            />
+            <div
+              class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded p-2"
+            >
+              <h5>{{ img.titulo }}</h5>
+              <p>{{ img.descripcion }}</p>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <button
+          class="carousel-control-prev"
+          type="button"
+          data-bs-target="#carouselExampleCaptions"
+          data-bs-slide="prev"
+        >
+          <span class="carousel-control-prev-icon"></span>
+        </button>
+        <button
+          class="carousel-control-next"
+          type="button"
+          data-bs-target="#carouselExampleCaptions"
+          data-bs-slide="next"
+        >
+          <span class="carousel-control-next-icon"></span>
+        </button>
+      </div>
+      {% else %}
+      <p class="text-center text-muted">No hay imágenes disponibles.</p>
+      {% endif %}
+    </div>
+
+    <!--BODYCARDS-->
+    <div class="container my-5">
+      <div class="bodycards">
+        <div class="row g-0">
+          <div class="col-12 col-lg-4">
+            <div class="item h-100">
+              <div class="icon"><i class="bi bi-activity"></i></div>
+              <div>
+                <h5>Dashboards claros</h5>
+                <p>
+                  Gráficas interactivas con filtros y comparativas por periodo.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12 col-lg-4">
+            <div class="item h-100">
+              <div class="icon"><i class="bi bi-robot"></i></div>
+              <div>
+                <h5>Predicción con IA</h5>
+                <p>Pronósticos, detección de picos y alertas personalizadas.</p>
+              </div>
+            </div>
+          </div>
+
+          
+          <div class="col-12 col-lg-4">
+            <div class="item h-100">
+              <div class="icon">
+                <i class="bi bi-file-earmark-bar-graph"></i>
+              </div>
+              <div>
+                <h5>Exportación a PDF/Excel</h5>
+                <p>
+                  Genera reportes descargables con tablas listas para compartir.
+                </p>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </div>
+    <!-- /BODYCARDS  -->
+
+    <!--Footer-->
+    <footer>
+      <p class="mb-0">
+        © 2025 AquaStats Jalisco | Proyecto de Minería de Datos y ML
+      </p>
+    </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-</body>
+  </body>
 </html>

@@ -1,239 +1,293 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="es">
-  <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AquaStatsJalisco</title>
+<html lang="es" data-bs-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AquaStatsJalisco</title>
 
-    <!-- Bootstrap y Íconos -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
-    <!-- Plotly -->
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <!-- Bootstrap + Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+  <!-- Plotly -->
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
-    <style>
-      :root{
-        --brand-start:#007BFF;
-        --brand-end:#1095f4;
-      }
-      body{
-        background:#f8f9fa;
-        background-image:
-          radial-gradient(900px 360px at -10% -10%, rgba(16,149,244,.08), transparent 60%),
-          radial-gradient(700px 300px at 110% 110%, rgba(0,123,255,.08), transparent 60%);
-      }
+  <style>
+    :root{
+      --brand-start:#0ea5e9; /* cyan-500 */
+      --brand-end:#2563eb;   /* indigo-600 */
+      --card-bg:#ffffff;
+      --muted:#6b7280;
+    }
 
-      /* NAVBAR */
-      .navbar{ background:linear-gradient(90deg,var(--brand-start),var(--brand-end)); }
-      .navbar-brand{ color:#fff!important; font-weight:700; font-size:1.4rem; }
-      .nav-link{ color:#f8f9fa!important; transition:.2s; }
-      .nav-link:hover{ color:#000!important; }
+    body{
+      background:#f5f7fb;
+      background-image:
+        radial-gradient(900px 360px at -10% -10%, rgba(37,99,235,.08), transparent 60%),
+        radial-gradient(700px 300px at 110% 110%, rgba(14,165,233,.08), transparent 60%);
+    }
 
-      /* Cards & wrappers */
-      .card-soft{
-        border:none;
-        border-radius:1rem;
-        box-shadow:0 12px 30px rgba(0,0,0,.08);
-      }
-      .card-head{
-        background:linear-gradient(90deg,rgba(0,123,255,.08),rgba(16,149,244,.08));
-        border-top-left-radius:1rem;
-        border-top-right-radius:1rem;
-      }
+    /* NAVBAR */
+    .navbar{
+      background:linear-gradient(90deg,var(--brand-start),var(--brand-end));
+      backdrop-filter: saturate(140%) blur(8px);
+      -webkit-backdrop-filter: saturate(140%) blur(8px);
+    }
+    .navbar-brand{ color:#fff!important; font-weight:700; font-size:1.25rem }
+    .nav-link{ color:#f8f9fa!important; transition:.2s }
+    .nav-link:hover{ color:#ffdd57!important }
 
-      /* Plot boxes */
-      .plot-box{
-        width:100%;
-        min-height:360px;
-        border-radius:.75rem;
-        background:#fff;
-        box-shadow:0 8px 24px rgba(0,0,0,.06);
-        padding:.5rem;
-      }
+    /* HERO */
+    .hero{
+      background: linear-gradient(90deg,var(--brand-start),var(--brand-end));
+      color:#fff; border-radius: 18px;
+      padding: 18px 20px;
+      box-shadow: 0 16px 40px rgba(37,99,235,.25);
+    }
+    .hero .avatar{
+      width:56px;height:56px;border-radius:50%;
+      display:grid;place-items:center;background:#ffffff1a;
+      backdrop-filter: blur(6px);
+    }
+    .btn-white{
+      background:#fff; color:#0f172a; border:0; border-radius:12px;
+    }
 
-      .actions .btn{ white-space:nowrap; }
-      .nav-tabs .nav-link{ font-weight:600; }
-    </style>
-  </head>
+    /* CARDS */
+    .card{
+      border:0; background:var(--card-bg); border-radius:16px;
+      box-shadow: 0 10px 24px rgba(16,24,40,.06);
+    }
+    .card-header{ background:transparent; border-bottom:1px solid rgba(0,0,0,.06) }
 
-  <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark shadow-sm">
-      <div class="container">
-        <a class="navbar-brand" href="/"><i class="bi bi-droplet-half"></i> AquaStats</a>
+    /* STAT CARDS */
+    .stat{ display:flex; align-items:center; gap:12px }
+    .stat .icon{
+      width:44px;height:44px;border-radius:12px;display:grid;place-items:center;
+      background:#eef2ff;color:#3b5bdb;
+    }
+    .muted{ color:var(--muted) }
 
-        <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-          <span class="navbar-toggler-icon"></span>
-        </button>
+    /* FORM/FILTER CARD HEAD */
+    .card-head{
+      background:linear-gradient(90deg,rgba(14,165,233,.08),rgba(37,99,235,.08));
+      border-top-left-radius:16px;border-top-right-radius:16px;
+    }
 
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <div class="navbar-nav ms-auto">
-            {% if user.is_authenticated %}
-              <a class="nav-link" href="/perfil"><i class="bi bi-person-circle"></i> Perfil</a>
-              <a class="nav-link" href="/salir"><i class="bi bi-box-arrow-right"></i> Salir</a>
+    /* PILL TABS */
+    .pill-tabs .nav-link{
+      border-radius:999px; padding:.5rem 1rem; color:#334155; font-weight:600;
+    }
+    .pill-tabs .nav-link.active{
+      background:linear-gradient(90deg,var(--brand-start),var(--brand-end));
+      color:#fff; box-shadow:0 8px 20px rgba(37,99,235,.25);
+    }
+
+    /* PLOT CONTAINERS */
+    .plot-box{
+      width:100%; min-height:360px; border-radius:.75rem; background:#fff;
+      box-shadow:0 8px 24px rgba(0,0,0,.06); padding:.5rem;
+    }
+
+    .table-sm td, .table-sm th{ padding:.55rem .65rem }
+  </style>
+</head>
+
+<body>
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg shadow-sm">
+    <div class="container">
+      <a class="navbar-brand" href="/"><i class="bi bi-droplet-half me-1"></i> AquaStats</a>
+
+      <button class="navbar-toggler text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <div class="navbar-nav ms-auto">
+          {% if user.is_authenticated %}
+            <a class="nav-link" href="/perfil"><i class="bi bi-person-circle"></i> Perfil</a>
+            <a class="nav-link" href="/salir"><i class="bi bi-box-arrow-right"></i> Salir</a>
+          {% else %}
+            <a class="nav-link" href="/sesion"><i class="bi bi-box-arrow-in-right"></i> Iniciar sesión</a>
+            <a class="nav-link" href="/registro"><i class="bi bi-person-plus"></i> Registrarse</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container py-3 py-md-4">
+
+    <!-- HERO -->
+    <div class="hero mb-3 mb-md-4">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div class="d-flex align-items-center gap-3">
+          <div class="avatar"><i class="bi bi-droplet-half fs-4"></i></div>
+          <div>
+            <h4 class="mb-0">Dashboard de Consumo de Agua</h4>
+            <small class="opacity-75">Vista general de consumo y análisis</small>
+          </div>
+        </div>
+        <div class="d-flex gap-2">
+          <a href="/dashboard" class="btn btn-white"><i class="bi bi-arrow-repeat me-1"></i> Actualizar</a>
+          <a href="/" class="btn btn-outline-light"><i class="bi bi-house-door me-1"></i> Inicio</a>
+        </div>
+      </div>
+
+      <!-- Tabs estilo pill -->
+      <ul class="nav nav-pills pill-tabs mt-3">
+        <li class="nav-item"><a class="nav-link active" href="#">General</a></li>
+        <li class="nav-item"><a class="nav-link" href="/perfil">Reportes</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'regresion' %}">Predicción</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'regresion_global' %}">Predicción Global</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'kmeans' %}">Agrupación Global</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'bayes' %}">Clasificación</a></li>
+      </ul>
+    </div>
+
+    {% if empty %}
+      <div class="alert alert-info shadow-sm">
+        No hay datos disponibles para mostrar en el dashboard.
+      </div>
+      <div class="d-flex gap-2">
+        <a href="/perfil" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Regresar</a>
+        <a href="/dashboard" class="btn btn-primary"><i class="bi bi-arrow-clockwise"></i> Recargar</a>
+      </div>
+    {% else %}
+
+
+    <!-- FILTROS -->
+    <div class="card mb-4">
+      <div class="card-head p-3">
+        <div class="fw-semibold"><i class="bi bi-funnel"></i> Filtros</div>
+      </div>
+      <div class="card-body">
+        <form method="get" class="row g-3">
+          <div class="col-md-3">
+            <label for="usuario" class="form-label">Usuario:</label>
+            <input type="text" id="usuario" name="usuario" class="form-control" placeholder="Buscar usuario" value="{{ request.GET.usuario|default:'' }}" />
+          </div>
+          <div class="col-md-4">
+            <label for="tipo" class="form-label">Tipo de Reporte:</label>
+            <select name="tipo" id="tipo" class="form-select">
+              <option value="">Todos</option>
+              <option value="SEM" {% if request.GET.tipo == 'SEM' %}selected{% endif %}>Semanal</option>
+              <option value="MES" {% if request.GET.tipo == 'MES' %}selected{% endif %}>Mensual</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label for="region" class="form-label">Región:</label>
+            <input type="text" id="region" name="region" class="form-control" placeholder="Ejemplo: RCC" value="{{ request.GET.region|default:'' }}" />
+          </div>
+
+          <div class="col-12 d-flex flex-wrap gap-2">
+            <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i> Filtrar</button>
+            <a href="/dashboard" class="btn btn-outline-secondary">Limpiar</a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <ul class="nav nav-pills pill-tabs" id="grafTabs" role="tablist">
+      <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#graf1">Tendencia</a></li>
+      <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#graf2">Promedio</a></li>
+      <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#graf3">Región</a></li>
+      <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#graf4">Histograma</a></li>
+    </ul>
+
+    <div class="tab-content mt-3">
+      <div class="tab-pane fade show active" id="graf1">
+        <div id="g1" class="plot-box"></div>
+      </div>
+      <div class="tab-pane fade" id="graf2">
+        <div id="g2" class="plot-box"></div>
+      </div>
+      <div class="tab-pane fade" id="graf3">
+        <div id="g3" class="plot-box"></div>
+      </div>
+      <div class="tab-pane fade" id="graf4">
+        <div id="g4" class="plot-box"></div>
+      </div>
+    </div>
+
+    <!-- PANEL IA + SISTEMA EXPERTO -->
+    <div class="row g-3 mt-2">
+      <div class="col-lg-6">
+        <div class="card mt-2">
+          <div class="card-header d-flex align-items-center gap-2">
+            <span class="badge bg-success-subtle text-success border"><i class="bi bi-cpu"></i></span>
+            <h6 class="mb-0">Resultados del Modelo de IA</h6>
+          </div>
+          <div class="card-body">
+            {% if prediccion %}
+              <p><strong>Predicción próxima:</strong> {{ prediccion }} m³</p>
+              <p><strong>Error Cuadrático Medio (MSE):</strong> {{ mse }}</p>
+              <p><strong>Coeficiente R²:</strong> {{ r2 }}</p>
             {% else %}
-              <a class="nav-link" href="/sesion"><i class="bi bi-box-arrow-in-right"></i> Iniciar sesión</a>
-              <a class="nav-link" href="/registro"><i class="bi bi-person-plus"></i> Registrarse</a>
+              <p class="text-muted">No hay suficientes datos para entrenar el modelo.</p>
             {% endif %}
           </div>
         </div>
       </div>
-    </nav>
-    <!-- Fin Navbar -->
 
-    <div class="container py-4">
-      <h2 class="text-center mb-4">Dashboard de Consumo de Agua</h2>
-
-      {% if empty %}
-        <div class="alert alert-info shadow-sm">
-          No hay datos disponibles para mostrar en el dashboard.
-        </div>
-        <div class="d-flex gap-2">
-          <a href="/perfil" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Regresar</a>
-          <a href="/dashboard" class="btn btn-primary"><i class="bi bi-arrow-clockwise"></i> Recargar</a>
-        </div>
-      {% else %}
-
-      <!-- FILTROS -->
-      <div class="card card-soft mb-4">
-        <div class="card-head p-3">
-          <div class="fw-semibold"><i class="bi bi-funnel"></i> Filtros</div>
-        </div>
-        <div class="card-body">
-          <form method="get" class="row g-3">
-            <div class="col-md-3">
-              <label for="usuario" class="form-label">Usuario:</label>
-              <input type="text" id="usuario" name="usuario" class="form-control" placeholder="Buscar usuario" value="{{ request.GET.usuario|default:'' }}" />
-            </div>
-            <div class="col-md-4">
-              <label for="tipo" class="form-label">Tipo de Reporte:</label>
-              <select name="tipo" id="tipo" class="form-select">
-                <option value="">Todos</option>
-                <option value="SEM" {% if request.GET.tipo == 'SEM' %}selected{% endif %}>Semanal</option>
-                <option value="MES" {% if request.GET.tipo == 'MES' %}selected{% endif %}>Mensual</option>
-              </select>
-            </div>
-            <div class="col-md-4">
-              <label for="region" class="form-label">Región:</label>
-              <input type="text" id="region" name="region" class="form-control" placeholder="Ejemplo: RCC" value="{{ request.GET.region|default:'' }}" />
-            </div>
-
-            <div class="col-12">
-              <div class="d-flex flex-wrap gap-2 actions">
-                <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i> Filtrar</button>
-                <a href="/dashboard" class="btn btn-outline-secondary">Limpiar</a>
-                <a href="/perfil" class="btn btn-outline-danger">Regresar</a>
-
-                <!-- Accesos a análisis específicos -->
-                <a href="{% url 'regresion' %}" class="btn btn-info text-white"><i class="bi bi-graph-up"></i> Regresión Individual</a>
-                <a href="{% url 'regresion_global' %}" class="btn btn-info text-white"><i class="bi bi-graph-up-arrow"></i> Regresión Global</a>
-                <a href="{% url 'bayes' %}" class="btn btn-success"><i class="bi bi-diagram-3"></i> Bayes</a>
-                <a href="{% url 'kmeans' %}" class="btn btn-success"><i class="bi bi-diagram-2"></i> K-Means</a>
-              </div>
-            </div>
-          </form>
-        </div>
-      </div>
-
-      <!-- TABS-->
-      <ul class="nav nav-tabs" id="grafTabs" role="tablist">
-        <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#graf1">Tendencia</a></li>
-        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#graf2">Promedio</a></li>
-        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#graf3">Región</a></li>
-        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#graf4">Histograma</a></li>
-      </ul>
-
-      <div class="tab-content mt-3">
-        <div class="tab-pane fade show active" id="graf1">
-          <div id="g1" class="plot-box"></div>
-        </div>
-        <div class="tab-pane fade" id="graf2">
-          <div id="g2" class="plot-box"></div>
-        </div>
-        <div class="tab-pane fade" id="graf3">
-          <div id="g3" class="plot-box"></div>
-        </div>
-        <div class="tab-pane fade" id="graf4">
-          <div id="g4" class="plot-box"></div>
-        </div>
-      </div>
-
-      <!-- PANEL IA + SISTEMA EXPERTO -->
-      <div class="row g-3 mt-2">
-        <div class="col-lg-6">
-          <!-- PANEL IA -->
-          <div class="card mt-2 shadow">
-            <div class="card-header bg-success text-white">
-              <h5 class="mb-0">Resultados del Modelo de IA</h5>
-            </div>
-            <div class="card-body">
-              {% if prediccion %}
-                <p><strong>Predicción próxima:</strong> {{ prediccion }} m³</p>
-                <p><strong>Error Cuadrático Medio (MSE):</strong> {{ mse }}</p>
-                <p><strong>Coeficiente R²:</strong> {{ r2 }}</p>
-              {% else %}
-                <p class="text-muted">No hay suficientes datos para entrenar el modelo.</p>
-              {% endif %}
-            </div>
+      <div class="col-lg-6">
+        <div class="card mt-2">
+          <div class="card-header d-flex align-items-center gap-2">
+            <span class="badge bg-primary-subtle text-primary border"><i class="bi bi-stars"></i></span>
+            <h6 class="mb-0">Recomendaciones del Sistema Experto</h6>
           </div>
-        </div>
-
-        <div class="col-lg-6">
-          <!-- PANEL SISTEMA EXPERTO -->
-          <div class="card mt-2 shadow">
-            <div class="card-header bg-primary text-white">
-              <h5 class="mb-0">Recomendaciones del Sistema Experto</h5>
-            </div>
-            <div class="card-body">
-              {% if recomendaciones %}
-                <ul class="list-group list-group-flush">
-                  {% for rec in recomendaciones %}
-                    <li class="list-group-item">{{ rec }}</li>
-                  {% endfor %}
-                </ul>
-              {% else %}
-                <p class="text-muted">No hay recomendaciones generadas todavía.</p>
-              {% endif %}
-            </div>
+          <div class="card-body">
+            {% if recomendaciones %}
+              <ul class="list-group list-group-flush">
+                {% for rec in recomendaciones %}
+                  <li class="list-group-item">{{ rec }}</li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p class="text-muted">No hay recomendaciones generadas todavía.</p>
+            {% endif %}
           </div>
         </div>
       </div>
-
-      <!-- COMPARATIVA HISTÓRICO vs IA -->
-      <div class="card mt-4 shadow">
-        <div class="card-header bg-dark text-white">
-          <h5 class="mb-0">Consumo histórico vs Predicción IA</h5>
-        </div>
-        <div class="card-body">
-          <div id="g5" class="plot-box"></div>
-        </div>
-      </div>
-
-      {% endif %}
     </div>
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-      function safeParse(jsonStr){
-        try { return JSON.parse(jsonStr); } catch(e){ return null; }
-      }
+    <!-- COMPARATIVA HISTÓRICO vs IA -->
+    <div class="card mt-4">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h6 class="mb-0">Consumo histórico vs Predicción IA</h6>
+        <span class="badge bg-dark-subtle text-dark border"><i class="bi bi-activity me-1"></i> Comparativa</span>
+      </div>
+      <div class="card-body">
+        <div id="g5" class="plot-box"></div>
+      </div>
+    </div>
 
-      {% if not empty %}
-        const g1 = safeParse('{{ graf1|escapejs }}');
-        const g2 = safeParse('{{ graf2|escapejs }}');
-        const g3 = safeParse('{{ graf3|escapejs }}');
-        const g4 = safeParse('{{ graf4|escapejs }}');
-        const g5 = safeParse('{{ graf5|escapejs }}'); 
+    {% endif %}
+  </div>
 
-        if(g1) Plotly.newPlot('g1', g1.data, g1.layout, {displayModeBar:false, responsive:true});
-        if(g2) Plotly.newPlot('g2', g2.data, g2.layout, {displayModeBar:false, responsive:true});
-        if(g3) Plotly.newPlot('g3', g3.data, g3.layout, {displayModeBar:false, responsive:true});
-        if(g4) Plotly.newPlot('g4', g4.data, g4.layout, {displayModeBar:false, responsive:true});
-        if(g5) Plotly.newPlot('g5', g5.data, g5.layout, {displayModeBar:false, responsive:true});
-      {% endif %}
-    </script>
-  </body>
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    function safeParse(jsonStr){
+      try { return JSON.parse(jsonStr); } catch(e){ return null; }
+    }
+
+    {% if not empty %}
+      const g1 = safeParse('{{ graf1|escapejs }}');
+      const g2 = safeParse('{{ graf2|escapejs }}');
+      const g3 = safeParse('{{ graf3|escapejs }}');
+      const g4 = safeParse('{{ graf4|escapejs }}');
+      const g5 = safeParse('{{ graf5|escapejs }}'); 
+
+      if(g1) Plotly.newPlot('g1', g1.data, g1.layout, {displayModeBar:false, responsive:true});
+      if(g2) Plotly.newPlot('g2', g2.data, g2.layout, {displayModeBar:false, responsive:true});
+      if(g3) Plotly.newPlot('g3', g3.data, g3.layout, {displayModeBar:false, responsive:true});
+      if(g4) Plotly.newPlot('g4', g4.data, g4.layout, {displayModeBar:false, responsive:true});
+      if(g5) Plotly.newPlot('g5', g5.data, g5.layout, {displayModeBar:false, responsive:true});
+    {% endif %}
+  </script>
+</body>
 </html>
