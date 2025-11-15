@@ -148,24 +148,22 @@
                       class="fw-semibold text-truncate"
                       title="{{ domicilio.direccion|default:'—' }}"
                     >
-                      <span class="list-icon"
-                        ><i class="bi bi-geo-alt"></i
-                      ></span>
+                      <span class="list-icon"><i class="bi bi-geo-alt"></i></span>
                       {{ domicilio.direccion|default:"—" }}
                     </div>
                   </div>
+
                   <div class="col-12 col-md-6">
                     <div class="small text-muted">Colonia</div>
                     <div
                       class="fw-semibold text-truncate"
                       title="{{ domicilio.colonia|default:'—' }}"
                     >
-                      <span class="list-icon"
-                        ><i class="bi bi-building"></i
-                      ></span>
+                      <span class="list-icon"><i class="bi bi-building"></i></span>
                       {{ domicilio.colonia|default:"—" }}
                     </div>
                   </div>
+
                   <div class="col-12 col-md-3">
                     <div class="small text-muted">Municipio</div>
                     <div class="fw-semibold">
@@ -173,17 +171,26 @@
                       {{ domicilio.municipio|default:"—" }}
                     </div>
                   </div>
+
                   <div class="col-12 col-md-3">
                     <div class="small text-muted">Región</div>
                     <div class="fw-semibold">
-                      <span class="list-icon"
-                        ><i class="bi bi-compass"></i
-                      ></span>
+                      <span class="list-icon"><i class="bi bi-compass"></i></span>
                       {{ domicilio.region|default:"—" }}
+                    </div>
+                  </div>
+                  <div class="col-12">
+                    <div class="small text-muted">Miembros en el domicilio</div>
+                    <div class="fw-semibold">
+                      <span class="list-icon">
+                        <i class="bi bi-people-fill"></i>
+                      </span>
+                      {{ domicilio.miembros_domicilio|default:"—" }}
                     </div>
                   </div>
                 </div>
               </div>
+
 
               <!--Form para eliminar-->
               <form method="POST" class="d-grid gap-2">

@@ -147,8 +147,34 @@
             </div>
 
             <div class="card-body p-4 p-md-5">
-              <!--Recibe el formulario y sus estilos se aplican abajo-->
-              <div class="mb-3">{{ form }}</div>
+              <!--Recibe el formulario-->
+              <div class="card-body p-4 p-md-5">
+                <!-- Campos del formulario -->
+                <div class="mb-3">
+                  {{ form.direccion.label_tag }}
+                  {{ form.direccion }}
+                </div>
+
+                <div class="mb-3">
+                  {{ form.colonia.label_tag }}
+                  {{ form.colonia }}
+                </div>
+
+                <div class="mb-3">
+                  {{ form.municipio.label_tag }}
+                  {{ form.municipio }}
+                </div>
+
+                <div class="mb-3">
+                  {{ form.region.label_tag }}
+                  {{ form.region }}
+                </div>
+
+                <div class="mb-3">
+                  {{ form.miembros_domicilio.label_tag }}
+                  {{ form.miembros_domicilio }}
+                </div>
+
 
               {% if error %}
               <div class="alert alert-danger shadow-sm">{{ error }}</div>

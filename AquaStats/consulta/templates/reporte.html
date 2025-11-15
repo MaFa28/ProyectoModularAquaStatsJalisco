@@ -165,46 +165,46 @@
 
                 <!--Input de  Cantidad-->
                 <div class="mb-3">
-                  {{ form.cantidad.label_tag }} {{ form.cantidad }} {% if
-                  form.cantidad.errors %}
-                  <ul class="errorlist">
-                    {{ form.cantidad.errors }}
-                  </ul>
+                  {{ form.cantidad.label_tag }} {{ form.cantidad }} 
+                  {% if form.cantidad.errors %}
+                    <ul class="errorlist">
+                      {{ form.cantidad.errors }}
+                    </ul>
                   {% endif %}
                 </div>
 
                 <!--Input de  Tipo de reporte -->
                 <div class="mb-3">
-                  {{ form.tipo_reporte.label_tag }} {{ form.tipo_reporte }} {%
-                  if form.tipo_reporte.errors %}
-                  <ul class="errorlist">
-                    {{ form.tipo_reporte.errors }}
-                  </ul>
+                  {{ form.tipo_reporte.label_tag }} {{ form.tipo_reporte }} 
+                  {% if form.tipo_reporte.errors %}
+                    <ul class="errorlist">
+                      {{ form.tipo_reporte.errors }}
+                    </ul>
                   {% endif %}
                 </div>
 
                 <!--Input de Fecha-->
                 <div class="mb-3">
-                  {{ form.fecha.label_tag }} {{ form.fecha }} {% if
-                  form.fecha.errors %}
-                  <ul class="errorlist">
-                    {{ form.fecha.errors }}
-                  </ul>
+                  {{ form.fecha.label_tag }} {{ form.fecha }} 
+                  {% if form.fecha.errors %}
+                    <ul class="errorlist">
+                      {{ form.fecha.errors }}
+                    </ul>
                   {% endif %}
                 </div>
 
                 <!--Input de  Domicilio-->
                 <div class="mb-3">
-                  {{ form.id_domicilio.label_tag }} {{ form.id_domicilio }} {%
-                  if form.id_domicilio.errors %}
-                  <ul class="errorlist">
-                    {{ form.id_domicilio.errors }}
-                  </ul>
+                  {{ form.id_domicilio.label_tag }} {{ form.id_domicilio }} 
+                  {% if form.id_domicilio.errors %}
+                    <ul class="errorlist">
+                      {{ form.id_domicilio.errors }}
+                    </ul>
                   {% endif %}
                 </div>
 
                 {% if error %}<!--Si existe un error-->
-                <div class="alert alert-danger">{{ error }}</div>
+                  <div class="alert alert-danger">{{ error }}</div>
                 {% endif %}
 
                 <div class="d-grid gap-2 mt-3">

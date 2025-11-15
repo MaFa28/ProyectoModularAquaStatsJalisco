@@ -152,6 +152,11 @@ class domicilior(models.Model): #Tabla domicilio
     municipio = models.CharField(max_length=5,choices=MUNICIPIO)
     region = models.CharField(max_length=3, choices=REGION)
     id_usuario = models.ForeignKey(User, on_delete=models.CASCADE)
+    miembros_domicilio = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text="Número de personas que viven en el domicilio"
+    )
     
     def __str__(self):
         return self.direccion#concatenar en el panel de administrador

@@ -20,11 +20,13 @@ import plotly.express as px  # Manejo de datos y muestra datos en dashboard
 from datetime import datetime  # para convertir la informacion para exportar
 from reportlab.lib.pagesizes import letter  # Crear PDF
 from reportlab.lib import colors  # Crear PDF
-from reportlab.lib.units import inch  # Crear PDF
+from django.contrib.staticfiles import finders
 from django.utils import timezone  # manejo de fechas y horas
+from django.conf import settings # Crear PDF
+from reportlab.lib.units import mm # Crear PDF
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle # Crear PDF
 # Estilos en el PDF
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
-from reportlab.lib.styles import getSampleStyleSheet  # Trabajo en PDF
 # Trae el algoritmo de Regresion lineal
 from sklearn.linear_model import LinearRegression
 # Auxiliares para los algoritmos
@@ -35,7 +37,6 @@ from sklearn.cluster import KMeans  # Trae el ALgoritmo de Kmeans
 from django.db.models import Avg, Count, Max  # Herramientas auxiliares de Kmeans
 from django.conf import settings  # Herramientas auxiliares de Kmeans
 import os  # Herramientas auxiliares de Kmeans
-from datetime import date  # Herramientas auxiliares de Kmeans
 # Trae el modelo de la ia
 from .utils.ia_hibrida import entrenar_modelo, predecir_consumo
 # trae el modelo del sistema experto
@@ -43,6 +44,7 @@ from .utils.sistema_experto import sistema_experto
 import plotly.graph_objects as go  # apoyo en las graficas
 # trae el modelo de guardar recomendaciones
 from .utils.help import guardar_recomendacion
+
 
 # Create your views here.
 
@@ -400,16 +402,14 @@ def exportar_excel(request):  # Vista para exportar archivos a EXCEl
     wb.save(response)
     return response
 
+@login_required# Protege los endpoints si el usuario no esta logeado
+def exportar_pdf(request):# Vista para exportar archivos a PDF
 
-@login_required  # Protege los endpoints si el usuario no esta logeado
-def exportar_pdf(request):  # Vista para generar PDF con estilos
+    # Filtros 
     tipo = request.GET.get('tipo')
     fecha = request.GET.get('fecha')
 
-    # Se obtienen solos los datos del usuario logeado
     reportes = consumoagua.objects.filter(id_usuario=request.user)
-
-    # Filtros
     if tipo:
         reportes = reportes.filter(tipo_reporte=tipo)
     if fecha:
@@ -417,66 +417,189 @@ def exportar_pdf(request):  # Vista para generar PDF con estilos
             fecha_obj = datetime.strptime(fecha, "%Y-%m-%d").date()
             reportes = reportes.filter(fecha=fecha_obj)
         except ValueError:
-            pass  # Ignora el formato
+            pass
 
-    # Se crea buffer temporal
+    # Documento 
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
         buffer,
         pagesize=letter,
-        leftMargin=40, rightMargin=40, topMargin=60, bottomMargin=40  # márgenes
+        leftMargin=26*mm, rightMargin=18*mm,
+        topMargin=36*mm, bottomMargin=20*mm
     )
 
     styles = getSampleStyleSheet()
+    def add_style_safe(s):
+        if s.name not in styles.byName:
+            styles.add(s)
+    add_style_safe(ParagraphStyle(name="AquaH2", fontName="Helvetica-Bold",
+                                  fontSize=12, leading=14.5, textColor=colors.HexColor("#0B2347"),
+                                  spaceBefore=10, spaceAfter=6))
+    add_style_safe(ParagraphStyle(name="AquaMeta", fontName="Helvetica",
+                                  fontSize=9.5, textColor=colors.HexColor("#6B7280"),
+                                  spaceAfter=12))
+    add_style_safe(ParagraphStyle(name="AquaCard", fontName="Helvetica-Bold",
+                                  fontSize=12.5, textColor=colors.HexColor("#111827"), alignment=1))
+    add_style_safe(ParagraphStyle(name="AquaCardSub", fontName="Helvetica",
+                                  fontSize=9.8, textColor=colors.HexColor("#374151"), alignment=1))
+
     elements = []
 
-    # Encabezado principal
-    titulo = Paragraph(
-        "<b>Reporte Público de Consumo de Agua</b>", styles["Title"])
-    fecha_gen = Paragraph(
-        f"<b>Generado:</b> {timezone.now().strftime('%d/%m/%Y %H:%M')}", styles["Normal"])
-    elements.append(titulo)
-    elements.append(Spacer(1, 10))
-    elements.append(fecha_gen)
-    elements.append(Spacer(1, 20))
+    # Marca de agua
+    LOGO_REL = 'img/carrusel/img1.png'
+    logo_path = finders.find(LOGO_REL)
+    if not logo_path:
+        try:
+            candidate = os.path.join(getattr(settings, 'STATIC_ROOT', ''), LOGO_REL)
+            if candidate and os.path.exists(candidate):
+                logo_path = candidate
+        except Exception:
+            pass
+    if not logo_path:
+        for base in getattr(settings, 'STATICFILES_DIRS', []):
+            candidate = os.path.join(base, LOGO_REL)
+            if os.path.exists(candidate):
+                logo_path = candidate
+                break
 
-    # Encabezados de tabla
-    data = [
-        ["Usuario", "Consumo (m3)", "Tipo de reporte", "Domicilio", "Fecha"]]
+    # Encabezado / Pie / Marca de agua 
+    def _header_footer(canvas, _doc):
+        canvas.saveState()
 
-    # Filas
+        # Marca de agua centrada
+        if logo_path:
+            try:
+                page_w, page_h = canvas._pagesize
+                wm_w = 120*mm; wm_h = 120*mm
+                x = (page_w - wm_w) / 2
+                y = (page_h - wm_h) / 2
+                try:
+                    canvas.setFillAlpha(0.06); canvas.setStrokeAlpha(0.06)
+                except Exception:
+                    pass
+                canvas.drawImage(logo_path, x, y, width=wm_w, height=wm_h,
+                                 preserveAspectRatio=True, mask='auto')
+                try:
+                    canvas.setFillAlpha(1); canvas.setStrokeAlpha(1)
+                except Exception:
+                    pass
+            except Exception:
+                pass
+
+        # Banda superior 
+        band_h = 16*mm
+        band_y = _doc.height + _doc.topMargin - band_h - 8*mm
+        canvas.setFillColor(colors.HexColor("#1A7DFF"))
+        canvas.roundRect(_doc.leftMargin-10*mm, band_y,
+                         _doc.width + 20*mm, band_h, 7*mm, stroke=0, fill=1)
+
+        # Logo pequeño en la banda 
+        if logo_path:
+            try:
+                canvas.drawImage(
+                    logo_path,
+                    _doc.leftMargin - 2*mm,
+                    band_y + (band_h - 12*mm)/2,
+                    width=12*mm, height=12*mm, mask='auto'
+                )
+            except Exception:
+                pass
+
+        # Título en la banda 
+        canvas.setFillColor(colors.white)
+        canvas.setFont("Helvetica-Bold", 12)
+        canvas.drawString(
+            _doc.leftMargin + 14*mm,
+            band_y + band_h/2 - 4,
+            "Reporte de Consumo de Agua"
+        )
+
+        # Pie de página
+        canvas.setFont("Helvetica", 9)
+        canvas.setFillColor(colors.HexColor("#6B7280"))
+        canvas.drawString(_doc.leftMargin, 13*mm,
+                          f"Generado: {timezone.now().strftime('%d/%m/%Y %H:%M')}  •  Usuario: {request.user.username}")
+        canvas.drawRightString(_doc.leftMargin + _doc.width, 13*mm, f"Página {_doc.page}")
+
+        canvas.restoreState()
+
+    # Meta 
+    elements.append(Spacer(1, 8*mm))  #Espaciado
+    elements.append(Paragraph(
+        f"Filtros aplicados: Tipo = {tipo or 'Todos'} • Fecha = {fecha or '—'}",
+        styles["AquaMeta"]
+    ))
+
+    # Resumen 
+    total_registros = reportes.count()
+    total_m3 = sum((r.cantidad for r in reportes), 0)
+    avg_m3 = (float(total_m3) / total_registros) if total_registros else 0.0
+
+    cards_data = [
+        [Paragraph(f"{total_m3:.2f} m³", styles["AquaCard"]),
+         Paragraph(f"{avg_m3:.2f} m³", styles["AquaCard"]),
+         Paragraph(f"{total_registros}", styles["AquaCard"])],
+        [Paragraph("Consumo total", styles["AquaCardSub"]),
+         Paragraph("Promedio por reporte", styles["AquaCardSub"]),
+         Paragraph("Reportes generados", styles["AquaCardSub"])],
+    ]
+    cards = Table(cards_data, colWidths=[50*mm, 50*mm, 50*mm], rowHeights=[14*mm, 10*mm])
+    cards.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor("#F8FAFC")),
+        ('BOX', (0, 0), (-1, -1), 0.9, colors.HexColor("#E5E7EB")),
+        ('INNERGRID', (0, 0), (-1, -1), 0.4, colors.HexColor("#E5E7EB")),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 10),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 10),
+        ('TOPPADDING', (0, 0), (-1, -1), 8),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+    ]))
+    elements += [cards, Spacer(1, 18)]
+
+    elements += [Paragraph("Detalle de registros", styles["AquaH2"]), Spacer(1, 8)]
+
+    #  Tabla 
+    data = [["Usuario", "Consumo (m³)", "Tipo", "Domicilio", "Fecha"]]
     for r in reportes:
         data.append([
             r.id_usuario.username,
-            str(r.cantidad),
+            f"{r.cantidad}",
             r.get_tipo_reporte_display(),
             r.id_domicilio.direccion,
             r.fecha.strftime("%d/%m/%Y"),
         ])
+    if len(data) == 1:
+        data.append(["—", "—", "—", "No se encontraron registros con los filtros.", "—"])
 
-    # Crear tabla con estilos y márgenes
-    table = Table(data, colWidths=[100, 80, 100, 120, 80])
+    table = Table(data, colWidths=[40*mm, 28*mm, 28*mm, 64*mm, 28*mm], repeatRows=1)
     table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#0077b6")),  # encabezado azul
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#1A7DFF")),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 10.5),
         ('BOTTOMPADDING', (0, 0), (-1, 0), 10),
-        ('BACKGROUND', (0, 1), (-1, -1), colors.whitesmoke),
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),  # bordes de tabla
-        ('LEFTPADDING', (0, 0), (-1, -1), 6),  # margen interno
-        ('RIGHTPADDING', (0, 0), (-1, -1), 6),
-        ('TOPPADDING', (0, 0), (-1, -1), 4),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 1), (-1, -1), 9.8),
+        ('TEXTCOLOR', (0, 1), (-1, -1), colors.HexColor("#111827")),
+        ('ALIGN', (1, 1), (1, -1), 'RIGHT'),
+        ('ALIGN', (4, 1), (4, -1), 'CENTER'),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.HexColor("#FAFBFF"), colors.white]),
+        ('LINEBELOW', (0, 0), (-1, -1), 0.25, colors.HexColor("#E5E7EB")),
+
+        ('LEFTPADDING', (0, 1), (-1, -1), 8),
+        ('RIGHTPADDING', (0, 1), (-1, -1), 8),
+        ('TOPPADDING', (0, 1), (-1, -1), 7),
+        ('BOTTOMPADDING', (0, 1), (-1, -1), 7),
     ]))
-
     elements.append(table)
-    doc.build(elements)
 
+    #  Render 
+    doc.build(elements, onFirstPage=_header_footer, onLaterPages=_header_footer)
     buffer.seek(0)
-
     return FileResponse(buffer, as_attachment=True, filename="reportes_consumo.pdf")
-
 
 @login_required  # Protege los endpoints si el usuario no esta logeado
 # Vista para vizualizar todos los reportes de manera global

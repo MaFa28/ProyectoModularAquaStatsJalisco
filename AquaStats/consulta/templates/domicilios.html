@@ -109,6 +109,7 @@
                                 <th style="min-width:180px">Colonia</th>
                                 <th style="min-width:160px">Municipio</th>
                                 <th style="min-width:140px">Region</th>
+                                <th style="min-width:140px">Miembros</th>
                                 <th style="min-width:170px">Acciones</th>
                             </tr>
                         </thead>
@@ -120,6 +121,7 @@
                                     <td class="text-truncate" style="max-width: 280px">{{ dom.colonia }}</td>
                                     <td><span class="badge text-bg-light border">{{ dom.municipio }}</span></td>
                                     <td><span class="badge text-bg-secondary">{{ dom.region }}</span></td>
+                                    <td><span class="badge text-bg-secondary">{{ dom.miembros_domicilio }}</span></td>
                                     <td class="text-center">
                                     <div class="d-flex justify-content-center gap-2"><!--Botones de Acciones-->
                                         <a href="{% url 'editar_domicilio' dom.id %}" class="btn btn-warning btn-sm btn-icon" data-bs-toggle="tooltip" title="Editar domicilio">

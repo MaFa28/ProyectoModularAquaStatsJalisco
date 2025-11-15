@@ -37,13 +37,18 @@ class RegistroForm(UserCreationForm):#Se modifica el modelo usuario para usar su
 class RegistroDom(ModelForm):#Modelo formulario registro domicilio
     class Meta:
         model = domicilior
-        fields = ['direccion', 'colonia', 'municipio', 'region']
+        fields = ['direccion', 'colonia', 'municipio', 'region', 'miembros_domicilio']
         widgets = {
             #Elemento para agregar estilos a los inputs
             'direccion' : forms.TextInput(attrs={'class':'form-control', 'placeholder':'Ingresa tu direccion'}),
             'colonia' : forms.TextInput(attrs={'class':'form-control', 'placeholder':'Ingresa tu colonia'}),
             'municipio' : forms.Select(attrs={'class':'form-select'}),
-            'region' : forms.Select(attrs={'class':'form-select'})
+            'region' : forms.Select(attrs={'class':'form-select'}),
+            'miembros_domicilio': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Número de personas en el domicilio',
+                'min': 1,
+            }),
         }
         
 class RegistroCosumo(forms.ModelForm):#Modelo del formulario registro de consumo de agua
