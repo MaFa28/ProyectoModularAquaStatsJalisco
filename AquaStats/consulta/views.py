@@ -384,12 +384,13 @@ def exportar_excel(request):  # Vista para exportar archivos a EXCEl
     ws.title = "Reportes Consumo de Agua"
 
     # Agregar encabezado
-    ws.append(["Cantidad M3", "Tipo reporte", "Fecha", "Domicilio"])
+    ws.append(["Cantidad M3","Tipo de Consumo" ,"Tipo reporte", "Fecha", "Domicilio"])
 
     # Insertar filas
     for r in reportes:
         ws.append([
             r.cantidad,
+            r.get_tipo_consumo_display() if r.tipo_consumo else "",
             r.get_tipo_reporte_display(),
             r.fecha.strftime("%d/%m/%Y"),
             r.id_domicilio.direccion,
@@ -403,7 +404,7 @@ def exportar_excel(request):  # Vista para exportar archivos a EXCEl
     return response
 
 @login_required# Protege los endpoints si el usuario no esta logeado
-def exportar_pdf(request):# Vista para exportar archivos a PDF
+def exportar_pdf(request):  # Vista para exportar archivos a PDF
 
     # Filtros 
     tipo = request.GET.get('tipo')
@@ -555,23 +556,27 @@ def exportar_pdf(request):# Vista para exportar archivos a PDF
         ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
     ]))
     elements += [cards, Spacer(1, 18)]
-
     elements += [Paragraph("Detalle de registros", styles["AquaH2"]), Spacer(1, 8)]
 
-    #  Tabla 
-    data = [["Usuario", "Consumo (m³)", "Tipo", "Domicilio", "Fecha"]]
+    #  Tabla
+    data = [["Usuario", "Consumo (m³)", "Tipo de consumo", "Tipo de reporte", "Domicilio", "Fecha"]]
     for r in reportes:
         data.append([
             r.id_usuario.username,
             f"{r.cantidad}",
+            r.get_tipo_consumo_display() if r.tipo_consumo else "—",
             r.get_tipo_reporte_display(),
             r.id_domicilio.direccion,
             r.fecha.strftime("%d/%m/%Y"),
         ])
     if len(data) == 1:
-        data.append(["—", "—", "—", "No se encontraron registros con los filtros.", "—"])
+        data.append(["—", "—", "—", "—", "No se encontraron registros con los filtros.", "—"])
 
-    table = Table(data, colWidths=[40*mm, 28*mm, 28*mm, 64*mm, 28*mm], repeatRows=1)
+    table = Table(
+        data,
+        colWidths=[32*mm, 24*mm, 34*mm, 32*mm, 60*mm, 24*mm],
+        repeatRows=1
+    )
     table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#1A7DFF")),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
@@ -583,7 +588,7 @@ def exportar_pdf(request):# Vista para exportar archivos a PDF
         ('FONTSIZE', (0, 1), (-1, -1), 9.8),
         ('TEXTCOLOR', (0, 1), (-1, -1), colors.HexColor("#111827")),
         ('ALIGN', (1, 1), (1, -1), 'RIGHT'),
-        ('ALIGN', (4, 1), (4, -1), 'CENTER'),
+        ('ALIGN', (5, 1), (5, -1), 'CENTER'),
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
 
         ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.HexColor("#FAFBFF"), colors.white]),
@@ -600,6 +605,7 @@ def exportar_pdf(request):# Vista para exportar archivos a PDF
     doc.build(elements, onFirstPage=_header_footer, onLaterPages=_header_footer)
     buffer.seek(0)
     return FileResponse(buffer, as_attachment=True, filename="reportes_consumo.pdf")
+
 
 @login_required  # Protege los endpoints si el usuario no esta logeado
 # Vista para vizualizar todos los reportes de manera global
