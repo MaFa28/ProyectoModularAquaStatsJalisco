@@ -54,11 +54,12 @@ class RegistroDom(ModelForm):#Modelo formulario registro domicilio
 class RegistroCosumo(forms.ModelForm):#Modelo del formulario registro de consumo de agua
     class Meta:
         model = consumoagua
-        fields = ['cantidad', 'tipo_reporte', 'fecha', 'id_domicilio']
+        fields = ['cantidad', 'tipo_reporte', 'fecha', 'id_domicilio', 'tipo_consumo']
         widgets = {
             #Elemento para agregar estilos a los inputs
             'cantidad' : forms.NumberInput(attrs={'class': 'form-control', 'min': 1, 'max': 90000}),
             'tipo_reporte' : forms.Select(attrs={'class':'form-select'}),
             'fecha' : forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'id_domicilio' : forms.Select(attrs={'class': 'form-select'})
+            'id_domicilio' : forms.Select(attrs={'class': 'form-select'}),
+            'tipo_consumo': forms.Select(attrs={'class': 'form-select'}),
         }

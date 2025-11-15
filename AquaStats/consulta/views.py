@@ -604,43 +604,55 @@ def exportar_pdf(request):# Vista para exportar archivos a PDF
 @login_required  # Protege los endpoints si el usuario no esta logeado
 # Vista para vizualizar todos los reportes de manera global
 def reportes_publicos(request):
+    # Llamado a la BDD
     reportes = consumoagua.objects.select_related('id_usuario', 'id_domicilio')
 
-    # Filtros
+    #Filtros
     tipo_reporte = request.GET.get('tipo_reporte')
     region = request.GET.get('region')
     usuario = request.GET.get('usuario')
+    tipo_consumo = request.GET.get('tipo_consumo')
 
-    if tipo_reporte:  # Validaciones para los filtros
+    if tipo_reporte:
         reportes = reportes.filter(tipo_reporte=tipo_reporte)
+
     if region:
         reportes = reportes.filter(id_domicilio__region=region)
+
     if usuario:
         reportes = reportes.filter(id_usuario__username__icontains=usuario)
 
-    # Metodo para exportar todo o la pagina actual
-    if 'exportar_excel' in request.GET or 'exportar_pdf' in request.GET:
-        exportar_todo = request.GET.get('exportar_todo', '0') == '1'
+    if tipo_consumo:
+        reportes = reportes.filter(tipo_consumo=tipo_consumo)
 
-    # Exportar solo la página actual
-    exportar_todo = request.GET.get('exportar_todo', False)
-    if not exportar_todo:
-        paginator = Paginator(reportes, 10)
-        page_number = request.GET.get('page')
-        reportes = paginator.get_page(page_number).object_list
+    # Paginación 
+    paginator = Paginator(reportes, 10)  # 10 por página
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
 
-    data = [  # Obtiene la informacion
-        {
-            'Usuario': r.id_usuario.username,
-            'Consumo (m3)': r.cantidad,
-            'Región': r.id_domicilio.region,
-            'Tipo de Reporte': r.get_tipo_reporte_display(),
-        }
-        for r in reportes
-    ]
+    # Exportar 
+    exportar_excel = 'exportar_excel' in request.GET
+    exportar_todo = request.GET.get('exportar_todo', '0') == '1'
 
-    # Exportar con excel
-    if 'exportar_excel' in request.GET:
+    if exportar_excel:
+        # Si exporta todo, usamos el queryset filtrado completo
+        # Si no, solo los registros de la página actual
+        if exportar_todo:
+            qs_export = reportes
+        else:
+            qs_export = page_obj.object_list
+
+        data = [
+            {
+                'Usuario': r.id_usuario.username,
+                'Consumo (m3)': r.cantidad,
+                'Región': r.id_domicilio.region,
+                'Tipo de Reporte': r.get_tipo_reporte_display(),
+                'Tipo de Consumo': r.get_tipo_consumo_display() if r.tipo_consumo else '',
+            }
+            for r in qs_export
+        ]
+
         df = pd.DataFrame(data)
         response = HttpResponse(
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
@@ -650,16 +662,15 @@ def reportes_publicos(request):
         df.to_excel(response, index=False)
         return response
 
-    # Paginacion
-    paginator = Paginator(reportes, 10)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-
+    # Render de la vista 
     return render(request, 'reportes_publicos.html', {
         'page_obj': page_obj,
-        'reportes': page_obj.object_list,
+        'reportes': page_obj.object_list,  # lo que usa la tabla
+        'tipo_reporte': tipo_reporte,
+        'region': region,
+        'usuario': usuario,
+        'tipo_consumo': tipo_consumo,
     })
-
 
 @login_required  # Protege los endpoints si el usuario no esta logeado
 # Vista para ver un remusen del consumo, en forma de tabla y grafica, ademas muestra anomalias

@@ -182,6 +182,15 @@
                     </ul>
                   {% endif %}
                 </div>
+                <!--Input tipo de Consumo-->
+                <div class="mb-3">
+                  {{ form.tipo_consumo.label_tag }} {{ form.tipo_consumo }} 
+                  {% if form.tipo_consumo.errors %}
+                    <ul class="errorlist">
+                      {{ form.tipo_consumo.errors }}
+                    </ul>
+                  {% endif %}
+                </div>
 
                 <!--Input de Fecha-->
                 <div class="mb-3">

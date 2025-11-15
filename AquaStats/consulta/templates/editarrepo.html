@@ -164,6 +164,22 @@
                 {% endif %}
               </div>
 
+              <!--Input de Tipo de consumo-->
+              <div class="mb-3">
+                {{ form.tipo_consumo.label_tag }}
+                <div class="input-group">
+                  <span class="input-group-text">
+                    <i class="bi bi-diagram-3"></i>
+                  </span>
+                  {{ form.tipo_consumo }}
+                </div>
+                {% if form.tipo_consumo.errors %}<!--Si existe un error-->
+                <div class="invalid-feedback d-block">
+                  {{ form.tipo_consumo.errors }}
+                </div>
+                {% endif %}
+              </div>
+
               <!--Input de la Fecha-->
               <div class="mb-3">
                 {{ form.fecha.label_tag }}

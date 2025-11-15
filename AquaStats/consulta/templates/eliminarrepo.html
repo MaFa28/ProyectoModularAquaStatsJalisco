@@ -144,27 +144,21 @@
                   <div class="col-12 col-md-6">
                     <div class="small text-muted">Cantidad</div>
                     <div class="fw-semibold">
-                      <span class="list-icon"
-                        ><i class="bi bi-droplet"></i
-                      ></span>
+                      <span class="list-icon"><i class="bi bi-droplet"></i></span>
                       {{ reporte.cantidad }} m³
                     </div>
                   </div>
                   <div class="col-12 col-md-6">
                     <div class="small text-muted">Tipo de reporte</div>
                     <div class="fw-semibold">
-                      <span class="list-icon"
-                        ><i class="bi bi-list-check"></i
-                      ></span>
+                      <span class="list-icon"><i class="bi bi-list-check"></i></span>
                       {{ reporte.get_tipo_reporte_display }}
                     </div>
                   </div>
                   <div class="col-12 col-md-6">
                     <div class="small text-muted">Fecha</div>
                     <div class="fw-semibold">
-                      <span class="list-icon"
-                        ><i class="bi bi-calendar3"></i
-                      ></span>
+                      <span class="list-icon"><i class="bi bi-calendar3"></i></span>
                       {{ reporte.fecha|date:"d/m/Y" }}
                     </div>
                   </div>
@@ -174,14 +168,23 @@
                       class="fw-semibold text-truncate"
                       title="{{ reporte.id_domicilio.direccion|default:'—' }}"
                     >
-                      <span class="list-icon"
-                        ><i class="bi bi-geo-alt"></i
-                      ></span>
+                      <span class="list-icon"><i class="bi bi-geo-alt"></i></span>
                       {{ reporte.id_domicilio.direccion|default:"—" }}
+                    </div>
+                  </div>
+
+                  <div class="col-12 col-md-6">
+                    <div class="small text-muted">Tipo de consumo</div>
+                    <div class="fw-semibold">
+                      <span class="list-icon">
+                        <i class="bi bi-diagram-3"></i>
+                      </span>
+                      {{ reporte.get_tipo_consumo_display|default:"—" }}
                     </div>
                   </div>
                 </div>
               </div>
+
 
               <!--Form para eliminar -->
               <form method="POST" class="d-grid gap-2">

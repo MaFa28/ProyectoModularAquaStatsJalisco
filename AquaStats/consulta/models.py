@@ -167,6 +167,16 @@ class consumoagua(models.Model):#Tabla de consumos
         ("SEM", "SEMANAL"),
         ("MES", "MENSUAL"),
     )
+    TIPO_CONSUMO = (
+        ("DOMESTICO", "Doméstico"),
+        ("GANADERO", "Ganadero"),
+        ("AGRICOLA", "Agrícola"),
+        ("INDUSTRIAL", "Industrial"),
+        ("COMERCIAL_SERVICIOS", "Comercial / Servicios"),
+        ("PUBLICO_URBANO", "Público / Urbano"),
+        ("RECREATIVO", "Recreativo"),
+        ("OTRO", "Otro"),
+    )
 
     #Datos a guardar en la base de datos
     cantidad = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(99999999)])
@@ -174,6 +184,13 @@ class consumoagua(models.Model):#Tabla de consumos
     fecha = models.DateField()
     id_usuario = models.ForeignKey(User,on_delete=models.CASCADE)
     id_domicilio = models.ForeignKey(domicilior,on_delete=models.CASCADE)
+    tipo_consumo = models.CharField(
+        max_length=30,
+        choices=TIPO_CONSUMO,
+        null=True,
+        blank=True,
+        help_text="Tipo general de consumo de agua"
+    )
     
     def __str__(self):
         return  f"{self.cantidad} m3 por {self.id_usuario.username}"#concatenar en el panel de admistrador

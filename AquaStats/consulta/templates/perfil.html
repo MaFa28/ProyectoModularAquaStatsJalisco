@@ -2,86 +2,86 @@
 <!DOCTYPE html>
 <html lang="es" data-bs-theme="light">
 <head>
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AquaStatsJalisco</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AquaStatsJalisco</title>
 
-  <!-- Bootstrap + Icons -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Bootstrap + Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
-  <!-- Estilos del template -->
-  <style>
-    :root{
-      --brand-start:#007BFF;
-      --brand-end:#1095f4;
-      --card-bg:#ffffff;
-      --muted:#6c757d;
-    }
-    body{ background: #f5f7fb; }
+    <!-- Estilos del template -->
+    <style>
+      :root{
+        --brand-start:#007BFF;
+        --brand-end:#1095f4;
+        --card-bg:#ffffff;
+        --muted:#6c757d;
+      }
+      body{ background: #f5f7fb; }
 
-    /* Navbar “glass” con gradiente */
-    .navbar-glass{
-      background: linear-gradient(90deg,var(--brand-start),var(--brand-end));
-      backdrop-filter: saturate(140%) blur(8px);
-      -webkit-backdrop-filter: saturate(140%) blur(8px);
-    }
-    .navbar-brand{ color:#fff!important; font-weight:700; letter-spacing:.3px }
-    .navbar-glass .nav-link{ color:#f8f9fa!important; opacity:.9; transition: .2s }
-    .navbar-glass .nav-link:hover{ opacity:1; color:#ffdd57!important }
+      /* Navbar “glass” con gradiente */
+      .navbar-glass{
+        background: linear-gradient(90deg,var(--brand-start),var(--brand-end));
+        backdrop-filter: saturate(140%) blur(8px);
+        -webkit-backdrop-filter: saturate(140%) blur(8px);
+      }
+      .navbar-brand{ color:#fff!important; font-weight:700; letter-spacing:.3px }
+      .navbar-glass .nav-link{ color:#f8f9fa!important; opacity:.9; transition: .2s }
+      .navbar-glass .nav-link:hover{ opacity:1; color:#ffdd57!important }
 
-    /* Tarjetas y contenedores */
-    .card{
-      border: 0;
-      background: var(--card-bg);
-      box-shadow: 0 8px 24px rgba(16,24,40,.06);
-      border-radius: 16px;
-    }
-    .card-header { border-bottom: 1px solid rgba(0,0,0,.05); }
-    .card .btn { border-radius: 12px; padding: .6rem .9rem; }
+      /* Tarjetas y contenedores */
+      .card{
+        border: 0;
+        background: var(--card-bg);
+        box-shadow: 0 8px 24px rgba(16,24,40,.06);
+        border-radius: 16px;
+      }
+      .card-header { border-bottom: 1px solid rgba(0,0,0,.05); }
+      .card .btn { border-radius: 12px; padding: .6rem .9rem; }
 
-    /* Encabezado + acciones */
-    .page-title{ margin: 0; font-weight: 700; letter-spacing:.2px }
-    .toolbar .btn{
-      border-radius: 10px;
-      display: inline-flex; align-items: center; gap: .5rem;
-    }
-    .toolbar .btn .bi{ font-size: 1.1rem }
+      /* Encabezado + acciones */
+      .page-title{ margin: 0; font-weight: 700; letter-spacing:.2px }
+      .toolbar .btn{
+        border-radius: 10px;
+        display: inline-flex; align-items: center; gap: .5rem;
+      }
+      .toolbar .btn .bi{ font-size: 1.1rem }
 
-    /* Tabla responsiva con thead pegajoso */
-    .table-wrap{ max-height: 60vh; overflow:auto; border-radius: 14px; }
-    .table-sticky thead th{
-      position: sticky; top: 0; z-index: 2;
-      background: #eaf7ef;
-      box-shadow: 0 1px 0 rgba(0,0,0,.05);
-    }
-    .table-hover tbody tr{ transition: background-color .15s ease, transform .05s ease }
-    .table-hover tbody tr:hover{ background-color:#f6fbff }
-    .table tbody td, .table thead th{ vertical-align: middle }
-    .table-zebra tbody tr:nth-of-type(odd){ background-color: rgba(0,0,0,.01) }
+      /* Tabla responsiva con thead pegajoso */
+      .table-wrap{ max-height: 60vh; overflow:auto; border-radius: 14px; }
+      .table-sticky thead th{
+        position: sticky; top: 0; z-index: 2;
+        background: #eaf7ef;
+        box-shadow: 0 1px 0 rgba(0,0,0,.05);
+      }
+      .table-hover tbody tr{ transition: background-color .15s ease, transform .05s ease }
+      .table-hover tbody tr:hover{ background-color:#f6fbff }
+      .table tbody td, .table thead th{ vertical-align: middle }
+      .table-zebra tbody tr:nth-of-type(odd){ background-color: rgba(0,0,0,.01) }
 
-    /* Chips de filtros aplicados */
-    .chip{
-      --chip-bg:#eef4ff;
-      --chip-color:#1d4ed8;
-      display:inline-flex; align-items:center; gap:.4rem;
-      background: var(--chip-bg); color: var(--chip-color);
-      border:1px solid rgba(29,78,216,.12);
-      padding:.35rem .6rem; border-radius: 999px; font-size:.85rem;
-    }
+      /* Chips de filtros aplicados */
+      .chip{
+        --chip-bg:#eef4ff;
+        --chip-color:#1d4ed8;
+        display:inline-flex; align-items:center; gap:.4rem;
+        background: var(--chip-bg); color: var(--chip-color);
+        border:1px solid rgba(29,78,216,.12);
+        padding:.35rem .6rem; border-radius: 999px; font-size:.85rem;
+      }
 
-    /* Paginación compacta */
-    .pagination .page-link{ border:0; border-radius:10px }
-    .pagination .page-item.active .page-link{
-      background: var(--brand-start); color:#fff; box-shadow: 0 6px 18px rgba(0,123,255,.25)
-    }
+      /* Paginación compacta */
+      .pagination .page-link{ border:0; border-radius:10px }
+      .pagination .page-item.active .page-link{
+        background: var(--brand-start); color:#fff; box-shadow: 0 6px 18px rgba(0,123,255,.25)
+      }
 
-    /* Helpers */
-    .muted{ color: var(--muted) }
-    .fade-in{ animation: fade .18s ease-in }
-    @keyframes fade{ from{opacity:.7; transform: translateY(2px)} to{opacity:1; transform:none} }
-  </style>
+      /* Helpers */
+      .muted{ color: var(--muted) }
+      .fade-in{ animation: fade .18s ease-in }
+      @keyframes fade{ from{opacity:.7; transform: translateY(2px)} to{opacity:1; transform:none} }
+    </style>
 </head>
 
 <body>
@@ -244,6 +244,7 @@
               <th style="min-width:140px">Tipo de reporte</th>
               <th style="min-width:140px">Fecha</th>
               <th style="min-width:220px">Domicilio</th>
+              <th style="min-width:140px">Tipo de Consumo</th>
               <th style="min-width:160px">Acciones</th>
             </tr>
           </thead>
@@ -259,6 +260,7 @@
                 </td>
                 <td>{{ r.fecha|date:"d/m/Y" }}</td>
                 <td class="text-truncate" style="max-width:320px">{{ r.id_domicilio.direccion }}</td>
+                <td class="text-truncate" style="max-width:320px">{{ r.get_tipo_consumo_display|default:"—" }}</td> 
                 <td>
                   <div class="d-flex justify-content-center gap-2">
                     <a href="{% url 'editar_reporte' r.id %}" class="btn btn-warning btn-sm" data-bs-toggle="tooltip" title="Editar">
