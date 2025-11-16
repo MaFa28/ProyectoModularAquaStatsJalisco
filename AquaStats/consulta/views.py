@@ -755,6 +755,7 @@ def dashboard_global(request):
     tipo = request.GET.get('tipo')
     region = request.GET.get('region')
     usuario = request.GET.get('usuario')
+    tipo_consumo = request.GET.get('tipo_consumo')
 
     reportes = consumoagua.objects.select_related('id_domicilio', 'id_usuario')
 
@@ -764,6 +765,8 @@ def dashboard_global(request):
         reportes = reportes.filter(id_domicilio__region=region)
     if usuario:
         reportes = reportes.filter(id_usuario__username=usuario)
+    if tipo_consumo: 
+        reportes = reportes.filter(tipo_consumo=tipo_consumo)
 
     # --- Convertir a DataFrame ---
     df = pd.DataFrame(list(reportes.values(
@@ -771,7 +774,9 @@ def dashboard_global(request):
         'cantidad',
         'tipo_reporte',
         'id_usuario__username',
-        'id_domicilio__region'
+        'id_domicilio__region',
+        'tipo_consumo',                       
+        'id_domicilio__miembros_domicilio',  
     )))
 
     # --- Renombrar columnas ---
@@ -780,7 +785,9 @@ def dashboard_global(request):
         'id_domicilio__region': 'Region',
         'tipo_reporte': 'Tipo de Reporte',
         'cantidad': 'Cantidad',
-        'fecha': 'Fecha'
+        'fecha': 'Fecha',
+        'tipo_consumo': 'Tipo de Consumo',
+        'id_domicilio__miembros_domicilio': 'Miembros',
     }, inplace=True)
 
     if df.empty:
@@ -790,15 +797,17 @@ def dashboard_global(request):
     df['Fecha'] = pd.to_datetime(df['Fecha'])
     df['mes_num'] = df['Fecha'].dt.month
     df['Cantidad'] = pd.to_numeric(df['Cantidad'], errors='coerce')
+    if 'Miembros' in df.columns:
+        df['Miembros'] = pd.to_numeric(df['Miembros'], errors='coerce')
     df.dropna(subset=['Cantidad'], inplace=True)
 
-    # --- Gráficas principales ---
+    # --- Gráficas ---
     graf1 = px.line(df, x='Fecha', y='Cantidad', color='Usuario',
                     title='Tendencia de Consumo por Usuario')
 
     graf2 = px.bar(
-        df.groupby(['Usuario', 'Tipo de Reporte'])[
-            'Cantidad'].mean().reset_index(),
+        df.groupby(['Usuario', 'Tipo de Reporte'])['Cantidad']
+          .mean().reset_index(),
         x='Usuario', y='Cantidad', color='Tipo de Reporte',
         title='Promedio por Usuario y Tipo de Reporte'
     )
@@ -808,7 +817,47 @@ def dashboard_global(request):
     graf4 = px.box(df, x='Usuario', y='Cantidad',
                    title='Distribución del Consumo por Usuario')
 
-    #funciones definidas:
+
+    df_tipo = (
+        df.dropna(subset=['Tipo de Consumo'])
+          .groupby('Tipo de Consumo')['Cantidad']
+          .sum()
+          .reset_index()
+    )
+
+    if not df_tipo.empty:
+        graf6 = px.pie(
+            df_tipo,
+            names='Tipo de Consumo',
+            values='Cantidad',
+            title='Distribución del Consumo por Tipo de Uso'
+        )
+    else:
+        graf6 = px.pie(title='Distribución del Consumo por Tipo de Uso')
+
+    df_miembros = df.dropna(subset=['Miembros']).copy()
+
+    if not df_miembros.empty:
+        graf7 = px.scatter(
+            df_miembros,
+            x='Miembros',
+            y='Cantidad',
+            color='Tipo de Consumo',
+            size='Cantidad',
+            hover_name='Usuario',
+            title='Relación entre Miembros del Hogar y Consumo',
+            labels={
+                'Miembros': 'Miembros en el hogar',
+                'Cantidad': 'Consumo (m³)',
+                'Tipo de Consumo': 'Tipo de consumo',
+            }
+        )
+    else:
+        graf7 = px.scatter(
+            title='Relación entre Miembros del Hogar y Consumo'
+        )
+
+    # --- IA ---
     modelo, mse, r2 = entrenar_modelo(df)
     mes_actual_dt = df['Fecha'].max()
     mes_siguiente = df['Fecha'].dt.month.max() + 1
@@ -818,18 +867,12 @@ def dashboard_global(request):
     categoria_bayes = "IA"   # placeholder
     cluster = 2              # placeholder
 
-    # Sistema experto + IA
     recomendacion = sistema_experto(
         consumo_promedio, prediccion_futura, categoria_bayes, cluster)
-    # `recomendacion` es una lista de textos
 
-    # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-    # GUARDADO SEGURO DE RECOMENDACIONES
-    # Unimos los puntos y guardamos UNA sola recomendación del día
     if request.user.is_authenticated and recomendacion:
         texto_general = " • ".join(recomendacion)
         guardar_recomendacion(request.user, texto_general, algoritmo='general')
-    # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     # Serie mensual histórica promedio por mes
     df_mensual = (
@@ -840,16 +883,13 @@ def dashboard_global(request):
     df_mensual['Periodo'] = df_mensual['Fecha'].dt.to_timestamp()
     df_mensual.rename(columns={'Cantidad': 'PromedioMensual'}, inplace=True)
 
-    # Punto futuro para mostrar la predicción
     next_period_ts = (mes_actual_dt.to_period('M') + 1).to_timestamp()
 
     fig_cmp = go.Figure()
-    # Línea histórica
     fig_cmp.add_trace(go.Scatter(
         x=df_mensual['Periodo'], y=df_mensual['PromedioMensual'],
         mode='lines+markers', name='Histórico (promedio mensual)'
     ))
-    # Proyección
     if not df_mensual.empty and prediccion_futura is not None:
         fig_cmp.add_trace(go.Scatter(
             x=[df_mensual['Periodo'].iloc[-1], next_period_ts],
@@ -876,6 +916,8 @@ def dashboard_global(request):
         'graf3': graf3.to_json(),
         'graf4': graf4.to_json(),
         'graf5': fig_cmp.to_json(),
+        'graf6': graf6.to_json(),
+        'graf7': graf7.to_json(),
         'recomendaciones': recomendacion,
         'mse': round(mse, 2) if mse is not None else None,
         'r2': round(r2, 3) if r2 is not None else None,

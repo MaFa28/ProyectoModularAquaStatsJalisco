@@ -57,7 +57,7 @@ class RegistroCosumo(forms.ModelForm):#Modelo del formulario registro de consumo
         fields = ['cantidad', 'tipo_reporte', 'fecha', 'id_domicilio', 'tipo_consumo']
         widgets = {
             #Elemento para agregar estilos a los inputs
-            'cantidad' : forms.NumberInput(attrs={'class': 'form-control', 'min': 1, 'max': 90000}),
+            'cantidad' : forms.NumberInput(attrs={'class': 'form-control', 'min': 1, 'max': 99999999}),
             'tipo_reporte' : forms.Select(attrs={'class':'form-select'}),
             'fecha' : forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'id_domicilio' : forms.Select(attrs={'class': 'form-select'}),
