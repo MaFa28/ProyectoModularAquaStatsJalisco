@@ -31,6 +31,7 @@ urlpatterns = [
     path('salir/',views.salir, name='salir'),#Url para cerrar sesion
     path('sesion/', views.inicio, name='insesion'),#Url para el inicio de sesion
     path('perfil/', views.perfil, name='perfil'),#Url para el perfil
+    path('recursos/', views.recursos, name='recursos'),#Url para ver los recursos
     path('crearReporte/',views.reporte, name='reporte'),#Url para los reportes
     path('perfil/editar/<int:id>/', views.editar_reporte, name='editar_reporte'),#URL editar reporte
     path('perfil/eliminar/<int:id>', views.eliminar_reporte, name='eliminar_reporte'),#URL eliminar reporte

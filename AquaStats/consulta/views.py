@@ -174,6 +174,8 @@ def inicio(request):  # Vista inicio de sesion
             login(request, user)  # Usuario existente
             return redirect('perfil')
 
+def recursos(request):#Vista para ver los recursos
+    return render(request, 'recursos.html')
 
 @login_required  # Protege los endpoints si el usuario no esta logeado
 def domicilio(request):  # Vista de registro de domicilio

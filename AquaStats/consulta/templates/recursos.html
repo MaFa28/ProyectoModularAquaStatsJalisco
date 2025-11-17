@@ -1,0 +1,374 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AquaStatsJalisco</title>
+
+    <!-- Bootstrap + Icons -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+
+    <!-- Estilos del template -->
+    <style>
+      :root {
+        --brand-start: #007bff;
+        --brand-end: #1095f4;
+        --card-bg: #ffffff;
+        --muted: #6c757d;
+      }
+      body {
+        background: #f5f7fb;
+      }
+
+      /* Navbar “glass” con gradiente */
+      .navbar-glass {
+        background: linear-gradient(
+          90deg,
+          var(--brand-start),
+          var(--brand-end)
+        );
+        backdrop-filter: saturate(140%) blur(8px);
+        -webkit-backdrop-filter: saturate(140%) blur(8px);
+      }
+      .navbar-brand {
+        color: #fff !important;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+      }
+      .navbar-glass .nav-link {
+        color: #f8f9fa !important;
+        opacity: 0.9;
+        transition: 0.2s;
+      }
+      .navbar-glass .nav-link:hover {
+        opacity: 1;
+        color: #ffdd57 !important;
+      }
+
+      /* Tarjetas y contenedores */
+      .card {
+        border: 0;
+        background: var(--card-bg);
+        box-shadow: 0 8px 24px rgba(16, 24, 40, 0.06);
+        border-radius: 16px;
+      }
+      .card-header {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      }
+      .card .btn {
+        border-radius: 12px;
+        padding: 0.6rem 0.9rem;
+      }
+
+      /* Encabezado + acciones */
+      .page-title {
+        margin: 0;
+        font-weight: 700;
+        letter-spacing: 0.2px;
+      }
+      .toolbar .btn {
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .toolbar .btn .bi {
+        font-size: 1.1rem;
+      }
+
+      /* Tabla responsiva con thead pegajoso */
+      .table-wrap {
+        max-height: 60vh;
+        overflow: auto;
+        border-radius: 14px;
+      }
+      .table-sticky thead th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: #eaf7ef;
+        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.05);
+      }
+      .table-hover tbody tr {
+        transition: background-color 0.15s ease, transform 0.05s ease;
+      }
+      .table-hover tbody tr:hover {
+        background-color: #f6fbff;
+      }
+      .table tbody td,
+      .table thead th {
+        vertical-align: middle;
+      }
+      .table-zebra tbody tr:nth-of-type(odd) {
+        background-color: rgba(0, 0, 0, 0.01);
+      }
+
+      /* Chips de filtros aplicados */
+      .chip {
+        --chip-bg: #eef4ff;
+        --chip-color: #1d4ed8;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: var(--chip-bg);
+        color: var(--chip-color);
+        border: 1px solid rgba(29, 78, 216, 0.12);
+        padding: 0.35rem 0.6rem;
+        border-radius: 999px;
+        font-size: 0.85rem;
+      }
+
+      /* Paginación compacta */
+      .pagination .page-link {
+        border: 0;
+        border-radius: 10px;
+      }
+      .pagination .page-item.active .page-link {
+        background: var(--brand-start);
+        color: #fff;
+        box-shadow: 0 6px 18px rgba(0, 123, 255, 0.25);
+      }
+
+      /* Helpers */
+      .muted {
+        color: var(--muted);
+      }
+      .fade-in {
+        animation: fade 0.18s ease-in;
+      }
+      @keyframes fade {
+        from {
+          opacity: 0.7;
+          transform: translateY(2px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-glass shadow-sm">
+      <div class="container">
+        <a class="navbar-brand" href="/"
+          ><i class="bi bi-droplet-half me-1"></i> AquaStats</a
+        >
+        <button
+          class="navbar-toggler text-white"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <div class="navbar-nav ms-auto">
+            {% if user.is_authenticated %}
+            <a class="nav-link" href="/perfil"><i class="bi bi-person-circle"></i> Perfil</a>
+            <a class="nav-link" href="/salir"
+              ><i class="bi bi-box-arrow-right"></i> Salir</a
+            >
+            {% else %}
+            <a class="nav-link" href="/sesion"
+              ><i class="bi bi-box-arrow-in-right"></i> Iniciar sesión</a
+            >
+            <a class="nav-link" href="/registro"
+              ><i class="bi bi-person-plus"></i> Registrarse</a
+            >
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </nav>
+    <!--Navbar -->
+
+    <main class="container py-4">
+      <h1 class="h4 mb-3">
+        Recursos y consejos sobre uso responsable del agua
+      </h1>
+
+      <div class="row g-3">
+        <!-- Video -->
+        <div class="col-md-6">
+          <div class="card h-100">
+            <div class="card-body">
+              <h5 class="card-title">Video: Cómo se realiza una medición</h5>
+              <div class="ratio ratio-16x9 mb-2">
+                <iframe width="560" height="315" src="https://www.youtube.com/embed/eb-uMXgE4o4?si=UPQTQSTbjWrWc6nZ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+              </div>
+              <p class="card-text small text-muted">
+                Creditos a: Iniciativa Azure.
+              </p>
+            </div>
+          </div>
+        </div>
+        <!-- Video -->
+        <div class="col-md-6">
+          <div class="card h-100">
+            <div class="card-body">
+              <h5 class="card-title">Video: Cómo reducir el consumo en casa</h5>
+              <div class="ratio ratio-16x9 mb-2">
+                <iframe width="560" height="315" src="https://www.youtube.com/embed/ryZheo-655U?si=CNIjNmGr0rnuD0jp" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+              </div>
+              <p class="card-text small text-muted">
+                Creditos a: UnoTv.
+              </p>
+            </div>
+          </div>
+        </div>
+        <!-- Video -->
+        <div class="col-md-6">
+          <div class="card h-100">
+            <div class="card-body">
+              <h5 class="card-title">Video: Consumo de agua por dia</h5>
+              <div class="ratio ratio-16x9 mb-2">
+                <iframe width="560" height="315" src="https://www.youtube.com/embed/QCo7FqbKsh8?si=1Bd68gJ65RuLxiHZ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+              </div>
+              <p class="card-text small text-muted">
+                Creditos a: Aguas Andinas.
+              </p>
+            </div>
+          </div>
+        </div>
+        <!-- Video -->
+        <div class="col-md-6">
+          <div class="card h-100">
+            <div class="card-body">
+              <h5 class="card-title">Video: ¿México cerca del Día 0?</h5>
+              <div class="ratio ratio-16x9 mb-2">
+                <iframe width="560" height="315" src="https://www.youtube.com/embed/XdFi0pEGBQI?si=yMFBSe__F4EI9i4W" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+              </div>
+              <p class="card-text small text-muted">
+                Creditos a: MILENIO.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Artículo -->
+        <div class="col-md-6">
+          <div class="card h-100">
+            <div class="card-body">
+              <h5 class="card-title">Cuidemos el agua en familia - CONAGUA</h5>
+              <p class="card-text">
+                Tips para el cuidado del agua.
+              </p>
+              <a
+                href="https://www.gob.mx/conagua/articulos/cuidemos-el-agua-en-familia?idiom=es"
+                target="_blank"
+                class="btn btn-sm btn-primary"
+              >
+                Leer artículo
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Artículo -->
+        <div class="col-md-6">
+          <div class="card h-100">
+            <div class="card-body">
+              <h5 class="card-title">Ahorro de agua. Un hábito de todos los días - PROFECO</h5>
+              <p class="card-text">
+                Escases de agua, cuidado y uso eficiente.
+              </p>
+              <a
+                href="https://www.gob.mx/profeco/documentos/ahorro-de-agua-un-habito-de-todos-los-dias?state=published"
+                target="_blank"
+                class="btn btn-sm btn-primary"
+              >
+                Leer artículo
+              </a>
+            </div>
+          </div>
+        </div>
+        <!-- Artículo -->
+        <div class="col-md-6">
+          <div class="card h-100">
+            <div class="card-body">
+              <h5 class="card-title">Recomendaciones para ahorrar el agua - CONAGUA</h5>
+              <p class="card-text">
+                Guía y consejos prácticos para el uso correcto del agua .
+              </p>
+              <a
+                href="https://www.conagua.gob.mx/CONAGUA07/contenido/documentos/Recomendaciones%20para%20ahorrar%20el%20agua.pdf"
+                target="_blank"
+                class="btn btn-sm btn-primary"
+              >
+                Leer artículo
+              </a>
+            </div>
+          </div>
+        </div>
+        <!-- Artículo -->
+        <div class="col-md-6">
+          <div class="card h-100">
+            <div class="card-body">
+              <h5 class="card-title">Por un uso más eficiente del agua en la agricultura - UNAM</h5>
+              <p class="card-text">
+                Tecnologías para mejorar el riego y aumentar la eficiencia.
+              </p>
+              <a
+                href="https://unamglobal.unam.mx/por-un-uso-mas-eficiente-del-agua-en-la-agricultura/"
+                target="_blank"
+                class="btn btn-sm btn-primary"
+              >
+                Leer artículo
+              </a>
+            </div>
+          </div>
+        </div>
+        <!-- Artículo -->
+        <div class="col-md-6">
+          <div class="card h-100">
+            <div class="card-body">
+              <h5 class="card-title">El agua en México - CONAGUA</h5>
+              <p class="card-text">
+                Panorama del agua del país.
+              </p>
+              <a
+                href="https://www.conagua.gob.mx/CONAGUA07/Publicaciones/Publicaciones/EL-AGUA-EN-MEXICO.pdf"
+                target="_blank"
+                class="btn btn-sm btn-primary"
+              >
+                Leer artículo
+              </a>
+            </div>
+          </div>
+        </div>
+        <!-- Artículo -->
+        <div class="col-md-6">
+          <div class="card h-100">
+            <div class="card-body">
+              <h5 class="card-title">Agua y reservas hidrológicas - GOB Tepatitlan</h5>
+              <p class="card-text">
+                Distribucion de agua en el estado de Jalisco, contaminación de ríos, lagos, capacidades de las presas, sobreexplotacion de los mantos acuiferos.
+              </p>
+              <a
+                href="https://www.tepatitlan.gob.mx/astepa/transparencia/documentos/plan_estatal_de_desarrollo/PED%204.%20entorno_y_vida_sustentable.pdf"
+                target="_blank"
+                class="btn btn-sm btn-primary"
+              >
+                Leer artículo
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

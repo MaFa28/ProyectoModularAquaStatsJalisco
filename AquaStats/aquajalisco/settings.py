@@ -25,7 +25,6 @@ SECRET_KEY = 'django-insecure-8eu*)+m&&g%rs(z0=$)yo-nf=)+@ya$8kh1e4gqol5nz^6__p7
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-#Estas lineas solo son para ejecutar Ngrok y probar la funcionalidad
 ALLOWED_HOSTS = []
 # Application definition
 INSTALLED_APPS = [
