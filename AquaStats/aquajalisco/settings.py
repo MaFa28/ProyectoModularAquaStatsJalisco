@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+import dj_database_url #Pasar a produccion
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,11 +22,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-8eu*)+m&&g%rs(z0=$)yo-nf=)+@ya$8kh1e4gqol5nz^6__p7'
-
+#SECRET_KEY = 'django-insecure-8eu*)+m&&g%rs(z0=$)yo-nf=)+@ya$8kh1e4gqol5nz^6__p7'
+SECRET_KEY = os.environ.get('SECRET_KEY','') #PRODUCCION
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-ALLOWED_HOSTS = []
+#DEBUG = True
+DEBUG = 'RENDER' not in os.environ
+#ALLOWED_HOSTS = []
+ALLOWED_HOST = []
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if RENDER_EXTERNAL_HOSTNAME:#Validacion para produccion
+    ALLOWED_HOST.append(RENDER_EXTERNAL_HOSTNAME)
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -39,6 +45,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhitenoiseMiddleware', #Conf server
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -70,7 +77,7 @@ WSGI_APPLICATION = 'aquajalisco.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = { #Se agrega la base de datos de postgresql
+'''DATABASES = { #Se agrega la base de datos de postgresql
     "default": {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": "aquastatsjalisco",
@@ -79,8 +86,15 @@ DATABASES = { #Se agrega la base de datos de postgresql
         "HOST": "localhost",
         "PORT": "5432",
     }
-}
+}'''
 
+#Conexion a la base de datos
+DATABASES = {
+    'default' : dj_database_url.config(
+        default='sqlite:///' + os.path.join(BASE_DIR, 'db.sqlite3'),
+        conn_max_age=600
+    )
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -117,9 +131,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = '/static/'#Agregar imagenes al proyecto
-STATIC_DIRS = [#Lugar donde obtiene las iamgenes
+'''STATIC_DIRS = [#Lugar donde obtiene las iamgenes
     os.path.join(BASE_DIR, "static"),
-]
+]'''
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 LOGIN_URL = '/sesion/' #Instruccion si el usuario no esta logeado lo redirige
 
