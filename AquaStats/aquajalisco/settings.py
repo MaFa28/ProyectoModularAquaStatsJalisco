@@ -135,9 +135,9 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
-    BASE_DIR / 'static',
+    BASE_DIR / 'consulta' /'static',
 ]
-STATIC_ROOT = BASE_DIR / 'consulta' / 'staticfiles'
+STATIC_ROOT = BASE_DIR /  'staticfiles'
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
