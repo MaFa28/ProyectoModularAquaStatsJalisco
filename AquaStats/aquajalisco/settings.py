@@ -28,12 +28,12 @@ SECRET_KEY = os.environ.get('SECRET_KEY','') #PRODUCCION
 #DEBUG = True
 DEBUG = 'RENDER' not in os.environ
 #ALLOWED_HOSTS = []
-ALLOWED_HOST = [
+ALLOWED_HOSTS = [
     'aquastatsjalisco.onrender.com'
 ]
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME:#Validacion para produccion
-    ALLOWED_HOST.append(RENDER_EXTERNAL_HOSTNAME)
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
