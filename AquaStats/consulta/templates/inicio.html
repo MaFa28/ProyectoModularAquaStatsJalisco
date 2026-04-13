@@ -1,4 +1,4 @@
-
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
   <head>
@@ -201,7 +201,7 @@
             {% for img in imagenes %}
               <div class="carousel-item {% if forloop.first %}active{% endif %}">
                 <img
-                  src="/static/img/carrusel/{{ img.archivo }} "
+                  src="{% static img.archivo %}"
                   class="d-block w-100"
                   alt="{{ img.titulo }}"
                 />
